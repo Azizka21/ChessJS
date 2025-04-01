@@ -31,8 +31,8 @@ class Row {
     constructor(rowIndex, rowStatement) {
         this.cells = []
         this.index = rowIndex
-        for (let i=1; i<=8; i++) {
-            this.cells.push(new Cell(this.index, i, rowStatement[i-1]));
+        for (let i = 0; i < 8; i++) {
+            this.cells.push(new Cell(this.index, i+ 1, rowStatement[i]));
         }
     }
 }
@@ -40,8 +40,8 @@ class Row {
 class Board {
     constructor(statement = startposition) {
         this.rows = []
-        for (let i = 1; i <= 8; i++) {
-            this.rows.push(new Row(i, statement[i - 1]));
+        for (let i = 0; i < 8; i++) {
+            this.rows.push(new Row(i, statement[i]));
         }
         console.dir(this)
     }
@@ -70,7 +70,7 @@ function coordsToChess(row, column) {
         7: "g",
         8: "h"
     };
-    return numToLetter[column] + row.toString()
+    return numToLetter[column] + (row+1).toString()
 }
 
 function chessToCoords(chessNotation) {
