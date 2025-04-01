@@ -1,25 +1,49 @@
 window.onload = function() {
-    MakeBoard();
+    new Board()
 }
-function MakeBoard() {
-    let boardDiv = document.createElement('div');
-    boardDiv.className = "board"
-    for (let i = 0; i < 64; i++) {
-        let cellDiv = document.createElement('div')
-        if (Math.floor(i / 8) % 2 == 1) {
-            if (i % 2 == 1) {
-                cellDiv.className = "white-cell"
-            } else {
-                cellDiv.className = "black-cell"
-            }
-        } else {
-            if (i % 2 == 1) {
-                cellDiv.className = "black-cell"
-            } else {
-                cellDiv.className = "white-cell"
-            }
-        }
-            boardDiv.appendChild(cellDiv)
+
+class Piece {
+    constructor(color) {
+        this.color = color
     }
-    document.body.appendChild(boardDiv)
+}
+
+class Cell {
+    constructor(row, column, piece = null) {
+        this.position = this.getPosition(row,column)
+        this.piece = piece;
+    }
+    getPosition(row, column) {
+        const numToLetter = {
+            1: "a",
+            2: "b",
+            3: "c",
+            4: "d",
+            5: "e",
+            6: "f",
+            7: "g",
+            8: "h"
+        };
+        return numToLetter[column] + row.toString()
+    }
+}
+
+class Row {
+    constructor(rowIndex) {
+        this.cells = []
+        this.index = rowIndex
+        for (let i=1; i<=8; i++) {
+            this.cells.push(new Cell(this.index, i));
+        }
+    }
+}
+
+class Board {
+    constructor() {
+        this.rows = []
+        for (let i=1; i<=8; i++) {
+            this.rows.push(new Row(i));
+        }
+        console.dir(this)
+    }
 }
