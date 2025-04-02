@@ -1,6 +1,16 @@
 window.onload = function() {
-    Board = new Board()
-    Board.renderBoard()
+    Board = new Board();
+    boardDiv = Board.renderBoard();
+    boardDiv.addEventListener('click', (ev) => {
+        const cell = ev.target.closest('.cell')
+        if (cell) {
+            if (Board.picked) {
+                Board.putPiece(cell)
+            } else {
+                Board.takePiece(cell)
+            }
+        }
+    })
 }
 
 
@@ -51,6 +61,7 @@ class Board {
         }
         console.dir(this)
     }
+
     movePiece(oldPos, newPos) {
         oldPos = chessToCoords(oldPos);
         newPos = chessToCoords(newPos);
@@ -64,46 +75,63 @@ class Board {
         newCell.piece = piece;
     }
 
+    takePiece(cell) {
+        this.picked = cell.jsCell.piece;
+        cell.jsCell.piece = null;
+        cell.innerHTML = "";
+    }
+
+    putPiece(cell) {
+        cell.jsCell.piece = this.picked;
+        this.renderPiece(cell);
+        this.picked = null
+    }
     renderBoard() {
-        let boardDiv = document.createElement('div')
-        boardDiv.className = "board"
+        let boardDiv = document.createElement('div');
+        boardDiv.className = "board";
         for (let row of this.rows) {
             for (let cell of row.cells) {
-                let cellDiv = document.createElement('div')
-                cellDiv.className = cell.color
+                let cellDiv = document.createElement('div');
+                cell.element = cellDiv;
+                cellDiv.jsCell = cell;
+                cellDiv.classList.add('cell');
+                cellDiv.classList.add(cell.color);
 
                 // Add piece visually
                 if (cell.piece) {
-                    if (cell.piece.color == "white") {
-                        const piecesPNG = {
-                            Pawn: '<img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Chess_plt60.png">',
-                            Rook: '<img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Chess_rlt60.png">',
-                            Knight: '<img src="https://upload.wikimedia.org/wikipedia/commons/2/28/Chess_nlt60.png">',
-                            Bishop: '<img src="https://upload.wikimedia.org/wikipedia/commons/9/9b/Chess_blt60.png">',
-                            King: '<img src="https://upload.wikimedia.org/wikipedia/commons/3/3b/Chess_klt60.png">',
-                            Queen: '<img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Chess_qlt60.png">',
-
-
-                        };
-                        cellDiv.innerHTML = piecesPNG[cell.piece.pieceType]
-
-                    } else {
-                        const piecesPNG = {
-                            Pawn: '<img src="https://upload.wikimedia.org/wikipedia/commons/c/cd/Chess_pdt60.png">',
-                            Rook: '<img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Chess_rdt60.png">',
-                            Knight: '<img src="https://upload.wikimedia.org/wikipedia/commons/f/f1/Chess_ndt60.png">',
-                            Bishop: '<img src="https://upload.wikimedia.org/wikipedia/commons/8/81/Chess_bdt60.png">',
-                            King: '<img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/Chess_kdt60.png">',
-                            Queen: '<img src="https://upload.wikimedia.org/wikipedia/commons/a/af/Chess_qdt60.png">',
-                        };
-                        cellDiv.innerHTML = piecesPNG[cell.piece.pieceType]
-                    }
+                    this.renderPiece(cellDiv);
                 }
-
-                boardDiv.appendChild(cellDiv)
+                boardDiv.appendChild(cellDiv);
             }
         }
         document.body.appendChild(boardDiv)
+        return boardDiv
+    }
+    renderPiece(cell) {
+        const img = document.createElement("img");
+        if (cell.jsCell.piece.color == "white") {
+            const piecesPNG = {
+                Pawn: "https://upload.wikimedia.org/wikipedia/commons/0/04/Chess_plt60.png",
+                Rook: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Chess_rlt60.png",
+                Knight: "https://upload.wikimedia.org/wikipedia/commons/2/28/Chess_nlt60.png",
+                Bishop: "https://upload.wikimedia.org/wikipedia/commons/9/9b/Chess_blt60.png",
+                King: "https://upload.wikimedia.org/wikipedia/commons/3/3b/Chess_klt60.png",
+                Queen: "https://upload.wikimedia.org/wikipedia/commons/4/49/Chess_qlt60.png",
+            };
+            img.src = piecesPNG[cell.jsCell.piece.pieceType]
+        } else {
+            const piecesPNG = {
+                Pawn: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Chess_pdt60.png",
+                Rook: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Chess_rdt60.png",
+                Knight: "https://upload.wikimedia.org/wikipedia/commons/f/f1/Chess_ndt60.png",
+                Bishop: "https://upload.wikimedia.org/wikipedia/commons/8/81/Chess_bdt60.png",
+                King: "https://upload.wikimedia.org/wikipedia/commons/e/e3/Chess_kdt60.png",
+                Queen: "https://upload.wikimedia.org/wikipedia/commons/a/af/Chess_qdt60.png",
+            };
+            img.src = piecesPNG[cell.jsCell.piece.pieceType]
+        }
+        cell.replaceChildren(img);
+        console.log(cell);
     }
 }
 

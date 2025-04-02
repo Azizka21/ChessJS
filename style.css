@@ -7,16 +7,16 @@
   border: 2px solid black;
 }
 
+.cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .white-cell {
   background-color: navajowhite;
-  display: flex;
-  justify-content: center; /* Горизонтальное центрирование */
-  align-items: center; /* Вертикальное центрирование */
 }
 
 .black-cell {
   background-color: dimgrey;
-  display: flex;
-  justify-content: center; /* Горизонтальное центрирование */
-  align-items: center; /* Вертикальное центрирование */
 }
