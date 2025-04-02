@@ -1,21 +1,21 @@
 .board {
   display: grid;
-  grid-template-columns: repeat(8, 125px); /* 8 столбцов по 50px */
-  grid-template-rows: repeat(8, 125px);   /* 8 рядов по 50px */
-  width: 1000px;
-  height: 1000px;
+  grid-template-columns: repeat(8, 80px); /* 8 столбцов по 50px */
+  grid-template-rows: repeat(8, 80px);   /* 8 рядов по 50px */
+  width: 640px;
+  height: 640px;
   border: 2px solid black;
 }
 
 .white-cell {
-  background-color: white;
+  background-color: red;
   display: flex;
   justify-content: center; /* Горизонтальное центрирование */
   align-items: center; /* Вертикальное центрирование */
 }
 
 .black-cell {
-  background-color: black;
+  background-color: green;
   display: flex;
   justify-content: center; /* Горизонтальное центрирование */
   align-items: center; /* Вертикальное центрирование */

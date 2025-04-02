@@ -1,12 +1,16 @@
 window.onload = function() {
     Board = new Board()
+    Board.renderBoard()
 }
+
+
 document.addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         console.log("Нажат Enter!");
         Board.movePiece("a1","c2")
     }
 })
+
 
 class Piece {
     constructor(pieceType, color) {
@@ -17,6 +21,7 @@ class Piece {
 
 class Cell {
     constructor(row, column, piece) {
+        this.col = column
         this.position = coordsToChess(row,column);
         if (piece) {
             this.piece = new Piece(piece[0], piece[1]);
@@ -32,7 +37,7 @@ class Row {
         this.cells = []
         this.index = rowIndex
         for (let i = 0; i < 8; i++) {
-            this.cells.push(new Cell(this.index, i+ 1, rowStatement[i]));
+            this.cells.push(new Cell(this.index, i , rowStatement[i]));
         }
     }
 }
@@ -57,34 +62,72 @@ class Board {
         oldCell.piece = null;
         newCell.piece = piece;
     }
+
+    renderBoard() {
+        let boardDiv = document.createElement('div')
+        boardDiv.className = "board"
+        for (let row of this.rows) {
+            for (let cell of row.cells) {
+                let cellDiv = document.createElement('div')
+                if (row.index % 2 == 0) {
+                    if (cell.col % 2 == 0) {
+                        cellDiv.className = "black-cell"
+                    }
+                    else {
+                        cellDiv.className = "white-cell"
+                    }
+                }
+                else {
+                    if (cell.col % 2 == 0) {
+                        cellDiv.className = "white-cell"
+                    } else {
+                        cellDiv.className = "black-cell"
+                    }
+                }
+
+                // Add piece visually
+                if (cell.piece) {
+                    if (cell.piece.color == "white") {
+                        const piecesPNG = {
+                            Pawn: '<img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Chess_plt60.png">',
+                            Rook: '<img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Chess_rlt60.png">',
+                            Knight: '<img src="https://upload.wikimedia.org/wikipedia/commons/2/28/Chess_nlt60.png">',
+                            Bishop: '<img src="https://upload.wikimedia.org/wikipedia/commons/9/9b/Chess_blt60.png">',
+                            King: '<img src="https://upload.wikimedia.org/wikipedia/commons/3/3b/Chess_klt60.png">',
+                            Queen: '<img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Chess_qlt60.png">',
+
+
+                        };
+                        cellDiv.innerHTML = piecesPNG[cell.piece.pieceType]
+
+                    } else {
+                        const piecesPNG = {
+                            Pawn: '<img src="https://upload.wikimedia.org/wikipedia/commons/c/cd/Chess_pdt60.png">',
+                            Rook: '<img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Chess_rdt60.png">',
+                            Knight: '<img src="https://upload.wikimedia.org/wikipedia/commons/f/f1/Chess_ndt60.png">',
+                            Bishop: '<img src="https://upload.wikimedia.org/wikipedia/commons/8/81/Chess_bdt60.png">',
+                            King: '<img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/Chess_kdt60.png">',
+                            Queen: '<img src="https://upload.wikimedia.org/wikipedia/commons/a/af/Chess_qdt60.png">',
+                        };
+                        cellDiv.innerHTML = piecesPNG[cell.piece.pieceType]
+                    }
+                }
+
+                boardDiv.appendChild(cellDiv)
+            }
+        }
+        document.body.appendChild(boardDiv)
+    }
 }
 
 function coordsToChess(row, column) {
-    const numToLetter = {
-        1: "a",
-        2: "b",
-        3: "c",
-        4: "d",
-        5: "e",
-        6: "f",
-        7: "g",
-        8: "h"
-    };
+    const numToLetter = "abcdefgh"
     return numToLetter[column] + (row+1).toString()
 }
 
 function chessToCoords(chessNotation) {
-    const letterToNum = {
-        "a": 0,
-        "b": 1,
-        "c": 2,
-        "d": 3,
-        "e": 4,
-        "f": 5,
-        "g": 6,
-        "h": 7
-    }
-    return [parseInt(chessNotation[1] - 1), letterToNum[chessNotation[0]]]
+    const letterToNum = "abcdefgh";
+    return [parseInt(chessNotation[1]) - 1, letterToNum.indexOf(chessNotation[0])]
 }
 
 const startposition = [
