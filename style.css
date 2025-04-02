@@ -8,14 +8,14 @@
 }
 
 .white-cell {
-  background-color: red;
+  background-color: navajowhite;
   display: flex;
   justify-content: center; /* Горизонтальное центрирование */
   align-items: center; /* Вертикальное центрирование */
 }
 
 .black-cell {
-  background-color: green;
+  background-color: dimgrey;
   display: flex;
   justify-content: center; /* Горизонтальное центрирование */
   align-items: center; /* Вертикальное центрирование */

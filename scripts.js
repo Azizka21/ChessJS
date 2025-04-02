@@ -23,6 +23,7 @@ class Cell {
     constructor(row, column, piece) {
         this.col = column
         this.position = coordsToChess(row,column);
+        this.color = (row + column) % 2 == 0 ? "white-cell" : "black-cell"
         if (piece) {
             this.piece = new Piece(piece[0], piece[1]);
         }
@@ -69,21 +70,7 @@ class Board {
         for (let row of this.rows) {
             for (let cell of row.cells) {
                 let cellDiv = document.createElement('div')
-                if (row.index % 2 == 0) {
-                    if (cell.col % 2 == 0) {
-                        cellDiv.className = "black-cell"
-                    }
-                    else {
-                        cellDiv.className = "white-cell"
-                    }
-                }
-                else {
-                    if (cell.col % 2 == 0) {
-                        cellDiv.className = "white-cell"
-                    } else {
-                        cellDiv.className = "black-cell"
-                    }
-                }
+                cellDiv.className = cell.color
 
                 // Add piece visually
                 if (cell.piece) {
