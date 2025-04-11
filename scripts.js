@@ -7,7 +7,9 @@ window.onload = function() {
             if (Board.picked) {
                 Board.putPiece(cell)
             } else {
-                Board.takePiece(cell)
+                if (cell.jsCell.piece) {
+                    Board.takePiece(cell)
+                }
             }
         }
     })
@@ -21,21 +23,222 @@ document.addEventListener("keydown", function(event) {
     }
 })
 
+document.addEventListener("mousemove", function(event) {
+    if (Board.picked) {
+        console.log("moved")
+    }
+})
+
 
 class Piece {
-    constructor(pieceType, color) {
-        this.pieceType = pieceType;
+    constructor(color, pieceType) {
         this.color = color;
+        this.pieceType = pieceType;
+    };
+    getPossibleTurns() {
+        let possibleTurns = [];
+        return possibleTurns
+    }
+}
+
+class Pawn extends Piece {
+    constructor(color, pieceType = "Pawn") {
+        super(color, pieceType)
+    }
+    getPossibleTurns(cell, board) {
+        let possibleTurns = [];
+        if (this.color == "white") {
+            if (! board.rows[cell.row + 1].cells[cell.col].piece)
+            {
+                possibleTurns.push(coordsToChess(cell.row + 1, cell.col))
+            }
+            if (board.rows[cell.row + 1].cells[cell.col - 1] && board.rows[cell.row + 1].cells[cell.col - 1].piece)
+            {
+                console.log("left")
+                possibleTurns.push(coordsToChess(cell.row + 1, cell.col - 1))
+            }
+            if (board.rows[cell.row + 1].cells[cell.col + 1] && board.rows[cell.row + 1].cells[cell.col + 1].piece)
+            {
+                console.log("right")
+                possibleTurns.push(coordsToChess(cell.row + 1, cell.col + 1))
+            }
+        } else {
+            possibleTurns.push(coordsToChess(cell.row - 1, cell.col))
+        }
+        return possibleTurns;
+    }
+}
+
+class Rook extends Piece {
+    constructor(color, pieceType = "Rook") {
+        super(color, pieceType);
+    }
+    getPossibleTurns(cell, board) {
+        let possibleTurns = [];
+        for (let i = cell.row + 1; i < 8; i++) {
+            possibleTurns.push(coordsToChess(i, cell.col));
+            if (board.getCellByCoords([i, cell.col]).piece) {
+                break
+            };
+        }
+        for (let i = cell.row - 1; i >= 0; i--) {
+            possibleTurns.push(coordsToChess(i, cell.col));
+            if (board.getCellByCoords([i, cell.col]).piece) {
+                break
+            };
+        }
+        for (let i = cell.col + 1; i < 8; i++) {
+            possibleTurns.push(coordsToChess(cell.row, i));
+            if (board.getCellByCoords([cell.row, i]).piece) {
+                break
+            };
+        }
+        for (let i = cell.col - 1; i >= 0; i--) {
+            possibleTurns.push(coordsToChess(cell.row, i));
+            if (board.getCellByCoords([cell.row, i]).piece) {
+                break
+            };
+        }
+        return possibleTurns;
+    }
+}
+
+class Knight extends Piece {
+    constructor(color, pieceType = "Knight") {
+        super(color, pieceType);
+    }
+    getPossibleTurns(cell) {
+        let possibleTurns = [];
+        possibleTurns.push(coordsToChess(cell.row + 2, cell.col + 1));
+        possibleTurns.push(coordsToChess(cell.row + 2, cell.col - 1));
+        possibleTurns.push(coordsToChess(cell.row + 1, cell.col - 2));
+        possibleTurns.push(coordsToChess(cell.row + 1, cell.col + 2));
+        possibleTurns.push(coordsToChess(cell.row - 1, cell.col - 2));
+        possibleTurns.push(coordsToChess(cell.row - 1, cell.col + 2));
+        possibleTurns.push(coordsToChess(cell.row - 2, cell.col - 1));
+        possibleTurns.push(coordsToChess(cell.row - 2, cell.col + 1))
+        return possibleTurns;
+    }
+}
+
+class Bishop extends Piece {
+    constructor(color, pieceType = "Bishop") {
+        super(color, pieceType);
+    }
+    getPossibleTurns(cell, board) {
+        let possibleTurns = [];
+        for (let x = cell.col + 1, y = cell.row + 1; x < 8 && y < 8; x++, y++) {
+            possibleTurns.push(coordsToChess(y, x));
+            if (board.getCellByCoords([y, x]).piece) {
+                break
+            };
+        }
+        for (let x = cell.col + 1, y = cell.row - 1; x < 8 && y >= 0; x++, y--) {
+            possibleTurns.push(coordsToChess(y, x));
+            if (board.getCellByCoords([y, x]).piece) {
+                break
+            };
+        }
+        for (let x = cell.col - 1, y = cell.row - 1; x >= 0 && y >= 0; x--, y--) {
+            possibleTurns.push(coordsToChess(y, x));
+            if (board.getCellByCoords([y, x]).piece) {
+                break
+            };
+        }
+        for (let x = cell.col - 1, y = cell.row + 1; x >= 0 && y < 8; x--, y++) {
+            possibleTurns.push(coordsToChess(y, x));
+            if (board.getCellByCoords([y, x]).piece) {
+                break
+            };
+        }
+        return possibleTurns;
+    }
+}
+
+class King extends Piece {
+    constructor(color, pieceType = "King") {
+        super(color, pieceType);
+    }
+    getPossibleTurns(cell) {
+        let possibleTurns = [];
+        possibleTurns.push(coordsToChess(cell.row + 1, cell.col));
+        possibleTurns.push(coordsToChess(cell.row + 1, cell.col + 1));
+        possibleTurns.push(coordsToChess(cell.row, cell.col + 1));
+        possibleTurns.push(coordsToChess(cell.row - 1, cell.col + 1));
+        possibleTurns.push(coordsToChess(cell.row - 1, cell.col));
+        possibleTurns.push(coordsToChess(cell.row - 1, cell.col - 1));
+        possibleTurns.push(coordsToChess(cell.row, cell.col - 1));
+        possibleTurns.push(coordsToChess(cell.row + 1, cell.col - 1));
+        return possibleTurns;
+    }
+}
+
+class Queen extends Piece {
+    constructor(color, pieceType = "Queen") {
+        super(color, pieceType);
+    }
+    getPossibleTurns(cell, board) {
+        let possibleTurns = [];
+        for (let i = cell.row + 1; i < 8; i++) {
+            possibleTurns.push(coordsToChess(i, cell.col));
+            if (board.getCellByCoords([i, cell.col]).piece) {
+                break
+            };
+        }
+        for (let i = cell.row - 1; i >= 0; i--) {
+            possibleTurns.push(coordsToChess(i, cell.col));
+            if (board.getCellByCoords([i, cell.col]).piece) {
+                break
+            };
+        }
+        for (let i = cell.col + 1; i < 8; i++) {
+            possibleTurns.push(coordsToChess(cell.row, i));
+            if (board.getCellByCoords([cell.row, i]).piece) {
+                break
+            };
+        }
+        for (let i = cell.col - 1; i >= 0; i--) {
+            possibleTurns.push(coordsToChess(cell.row, i));
+            if (board.getCellByCoords([cell.row, i]).piece) {
+                break
+            };
+        }
+         for (let x = cell.col + 1, y = cell.row + 1; x < 8 && y < 8; x++, y++) {
+            possibleTurns.push(coordsToChess(y, x));
+            if (board.getCellByCoords([y, x]).piece) {
+                break
+            };
+        }
+        for (let x = cell.col + 1, y = cell.row - 1; x < 8 && y >= 0; x++, y--) {
+            possibleTurns.push(coordsToChess(y, x));
+            if (board.getCellByCoords([y, x]).piece) {
+                break
+            };
+        }
+        for (let x = cell.col - 1, y = cell.row - 1; x >= 0 && y >= 0; x--, y--) {
+            possibleTurns.push(coordsToChess(y, x));
+            if (board.getCellByCoords([y, x]).piece) {
+                break
+            };
+        }
+        for (let x = cell.col - 1, y = cell.row + 1; x >= 0 && y < 8; x--, y++) {
+            possibleTurns.push(coordsToChess(y, x));
+            if (board.getCellByCoords([y, x]).piece) {
+                break
+            };
+        }
+        return possibleTurns;
     }
 }
 
 class Cell {
     constructor(row, column, piece) {
+        this.row = row
         this.col = column
         this.position = coordsToChess(row,column);
         this.color = (row + column) % 2 == 0 ? "white-cell" : "black-cell"
         if (piece) {
-            this.piece = new Piece(piece[0], piece[1]);
+            this.piece = piece
         }
         else {
             this.piece = null
@@ -65,26 +268,32 @@ class Board {
     movePiece(oldPos, newPos) {
         oldPos = chessToCoords(oldPos);
         newPos = chessToCoords(newPos);
-        let oldCell = this.rows[oldPos[0]].cells[oldPos[1]];
-        let newCell = this.rows[newPos[0]].cells[newPos[1]];
+        let oldCell = this.getCellByCoords(oldPos);
+        let newCell = this.getCellByCoords(newPos);
         let piece = oldCell.piece;
-        console.log(piece);
-        console.log(oldCell);
-        console.log(newCell)
         oldCell.piece = null;
         newCell.piece = piece;
     }
 
     takePiece(cell) {
         this.picked = cell.jsCell.piece;
+        this.possibleTurns = this.picked.getPossibleTurns(cell.jsCell, this)
+        console.log(this.possibleTurns)
         cell.jsCell.piece = null;
         cell.innerHTML = "";
     }
 
     putPiece(cell) {
-        cell.jsCell.piece = this.picked;
-        this.renderPiece(cell);
-        this.picked = null
+        let jsCell = cell.jsCell
+        if (this.possibleTurns.includes(coordsToChess(jsCell.row, jsCell.col))) {
+            jsCell.piece = this.picked;
+            this.renderPiece(cell);
+            this.picked = null;
+        }
+    }
+
+    getCellByCoords(coords) {
+        return this.rows[coords[0]].cells[coords[1]]
     }
     renderBoard() {
         let boardDiv = document.createElement('div');
@@ -131,7 +340,6 @@ class Board {
             img.src = piecesPNG[cell.jsCell.piece.pieceType]
         }
         cell.replaceChildren(img);
-        console.log(cell);
     }
 }
 
@@ -146,24 +354,25 @@ function chessToCoords(chessNotation) {
 }
 
 const startposition = [
-    [
-    ["Rook", "white"], ["Knight", "white"], ["Bishop", "white"], ["Queen", "white"],
-    ["King", "white"], ["Bishop", "white"], ["Knight", "white"], ["Rook", "white"]
-    ],
-    [
-    ["Pawn", "white"], ["Pawn", "white"], ["Pawn", "white"], ["Pawn", "white"],
-    ["Pawn", "white"], ["Pawn", "white"], ["Pawn", "white"], ["Pawn", "white"]
-    ],
-    [null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null],
-    [
-    ["Pawn", "black"], ["Pawn", "black"], ["Pawn", "black"], ["Pawn", "black"],
-    ["Pawn", "black"], ["Pawn", "black"], ["Pawn", "black"], ["Pawn", "black"]
-    ],
-    [
-    ["Rook", "black"], ["Knight", "black"], ["Bishop", "black"], ["Queen", "black"],
-    ["King", "black"], ["Bishop", "black"], ["Knight", "black"], ["Rook", "black"]
-    ]
+  [
+    new Rook("white"),   new Knight("white"), new Bishop("white"), new Queen("white"),
+    new King("white"),   new Bishop("white"), new Knight("white"), new Rook("white")
+  ],
+  [
+    new Pawn("white"),   new Pawn("white"),   new Pawn("white"),   new Pawn("white"),
+    new Pawn("white"),   new Pawn("white"),   new Pawn("white"),   new Pawn("white")
+  ],
+  [ null, null, null, null, null, null, null, null ],
+  [ null, null, null, null, null, null, null, null ],
+  [ null, null, null, null, null, null, null, null ],
+  [ null, null, null, null, null, null, null, null ],
+  [
+    new Pawn("black"),   new Pawn("black"),   new Pawn("black"),   new Pawn("black"),
+    new Pawn("black"),   new Pawn("black"),   new Pawn("black"),   new Pawn("black")
+  ],
+  [
+    new Rook("black"),   new Knight("black"), new Bishop("black"), new Queen("black"),
+    new King("black"),   new Bishop("black"), new Knight("black"), new Rook("black")
+  ]
 ];
+
