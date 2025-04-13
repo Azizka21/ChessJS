@@ -47,23 +47,30 @@ class Pawn extends Piece {
     }
     getPossibleTurns(cell, board) {
         let possibleTurns = [];
-        if (this.color == "white") {
+        if (this.color == topColor) {
             if (! board.rows[cell.row + 1].cells[cell.col].piece)
             {
                 possibleTurns.push(coordsToChess(cell.row + 1, cell.col))
             }
-            if (board.rows[cell.row + 1].cells[cell.col - 1] && board.rows[cell.row + 1].cells[cell.col - 1].piece)
+            if (board.rows[cell.row + 1].cells[cell.col - 1] && board.rows[cell.row + 1].cells[cell.col - 1].piece && board.rows[cell.row + 1].cells[cell.col - 1].piece.color == bottomColor)
             {
-                console.log("left")
                 possibleTurns.push(coordsToChess(cell.row + 1, cell.col - 1))
             }
-            if (board.rows[cell.row + 1].cells[cell.col + 1] && board.rows[cell.row + 1].cells[cell.col + 1].piece)
+            if (board.rows[cell.row + 1].cells[cell.col + 1] && board.rows[cell.row + 1].cells[cell.col + 1].piece && board.rows[cell.row + 1].cells[cell.col + 1].piece.color == bottomColor)
             {
-                console.log("right")
                 possibleTurns.push(coordsToChess(cell.row + 1, cell.col + 1))
             }
         } else {
-            possibleTurns.push(coordsToChess(cell.row - 1, cell.col))
+            if (!board.rows[cell.row - 1].cells[cell.col].piece) {
+                console.log(cell)
+                possibleTurns.push(coordsToChess(cell.row - 1, cell.col))
+            }
+            if (board.rows[cell.row - 1].cells[cell.col - 1] && board.rows[cell.row - 1].cells[cell.col - 1].piece && board.rows[cell.row - 1].cells[cell.col - 1].piece.color == topColor) {
+                possibleTurns.push(coordsToChess(cell.row - 1, cell.col - 1))
+            }
+            if (board.rows[cell.row - 1].cells[cell.col + 1] && board.rows[cell.row - 1].cells[cell.col + 1].piece && board.rows[cell.row - 1].cells[cell.col + 1].piece.color == topColor) {
+                possibleTurns.push(coordsToChess(cell.row - 1, cell.col + 1))
+            }
         }
         return possibleTurns;
     }
@@ -76,28 +83,52 @@ class Rook extends Piece {
     getPossibleTurns(cell, board) {
         let possibleTurns = [];
         for (let i = cell.row + 1; i < 8; i++) {
-            possibleTurns.push(coordsToChess(i, cell.col));
             if (board.getCellByCoords([i, cell.col]).piece) {
-                break
-            };
+                if (board.getCellByCoords([i, cell.col]).piece.color == this.color) {
+                    break
+                } else {
+                    possibleTurns.push(coordsToChess(i, cell.col));
+                    break
+                }
+            } else {
+                possibleTurns.push(coordsToChess(i, cell.col));
+            }
         }
         for (let i = cell.row - 1; i >= 0; i--) {
-            possibleTurns.push(coordsToChess(i, cell.col));
             if (board.getCellByCoords([i, cell.col]).piece) {
-                break
-            };
+                if (board.getCellByCoords([i, cell.col]).piece.color == this.color) {
+                    break
+                } else {
+                    possibleTurns.push(coordsToChess(i, cell.col));
+                    break
+                }
+            } else {
+                possibleTurns.push(coordsToChess(i, cell.col));
+            }
         }
         for (let i = cell.col + 1; i < 8; i++) {
-            possibleTurns.push(coordsToChess(cell.row, i));
-            if (board.getCellByCoords([cell.row, i]).piece) {
-                break
-            };
+            if (board.getCellByCoords([i, cell.col]).piece) {
+                if (board.getCellByCoords([i, cell.col]).piece.color == this.color) {
+                    break
+                } else {
+                    possibleTurns.push(coordsToChess(i, cell.col));
+                    break
+                }
+            } else {
+                possibleTurns.push(coordsToChess(i, cell.col));
+            }
         }
         for (let i = cell.col - 1; i >= 0; i--) {
-            possibleTurns.push(coordsToChess(cell.row, i));
-            if (board.getCellByCoords([cell.row, i]).piece) {
-                break
-            };
+            if (board.getCellByCoords([i, cell.col]).piece) {
+                if (board.getCellByCoords([i, cell.col]).piece.color == this.color) {
+                    break
+                } else {
+                    possibleTurns.push(coordsToChess(i, cell.col));
+                    break
+                }
+            } else {
+                possibleTurns.push(coordsToChess(i, cell.col));
+            }
         }
         return possibleTurns;
     }
@@ -286,6 +317,9 @@ class Board {
     putPiece(cell) {
         let jsCell = cell.jsCell
         if (this.possibleTurns.includes(coordsToChess(jsCell.row, jsCell.col))) {
+            if (this.picked.pieceType == "Pawn" && (jsCell.row == 0 || jsCell.row == 7)) {
+                this.picked = new Queen(this.picked.color)
+            }
             jsCell.piece = this.picked;
             this.renderPiece(cell);
             this.picked = null;
@@ -353,26 +387,33 @@ function chessToCoords(chessNotation) {
     return [parseInt(chessNotation[1]) - 1, letterToNum.indexOf(chessNotation[0])]
 }
 
+const isBlackTop = Math.random() < 0.5;
+const topColor = isBlackTop ? "black" : "white";
+const bottomColor = isBlackTop ? "white" : "black";
+
+
 const startposition = [
   [
-    new Rook("white"),   new Knight("white"), new Bishop("white"), new Queen("white"),
-    new King("white"),   new Bishop("white"), new Knight("white"), new Rook("white")
+    new Rook(topColor),   new Knight(topColor), new Bishop(topColor), new Queen(topColor),
+    new King(topColor),   new Bishop(topColor), new Knight(topColor), new Rook(topColor)
   ],
   [
-    new Pawn("white"),   new Pawn("white"),   new Pawn("white"),   new Pawn("white"),
-    new Pawn("white"),   new Pawn("white"),   new Pawn("white"),   new Pawn("white")
+
+    new Pawn(topColor),   new Pawn(topColor),   new Pawn(topColor),   new Pawn(topColor),
+    new Pawn(topColor),   new Pawn(topColor),   new Pawn(topColor),   new Pawn(topColor)
   ],
   [ null, null, null, null, null, null, null, null ],
   [ null, null, null, null, null, null, null, null ],
+
   [ null, null, null, null, null, null, null, null ],
   [ null, null, null, null, null, null, null, null ],
   [
-    new Pawn("black"),   new Pawn("black"),   new Pawn("black"),   new Pawn("black"),
-    new Pawn("black"),   new Pawn("black"),   new Pawn("black"),   new Pawn("black")
+    new Pawn(bottomColor),   new Pawn(bottomColor),   new Pawn(bottomColor),   new Pawn(bottomColor),
+    new Pawn(bottomColor),   new Pawn(bottomColor),   new Pawn(bottomColor),   new Pawn(bottomColor)
   ],
   [
-    new Rook("black"),   new Knight("black"), new Bishop("black"), new Queen("black"),
-    new King("black"),   new Bishop("black"), new Knight("black"), new Rook("black")
+    new Rook(bottomColor),   new Knight(bottomColor), new Bishop(bottomColor), new Queen(bottomColor),
+    new King(bottomColor),   new Bishop(bottomColor), new Knight(bottomColor), new Rook(bottomColor)
   ]
 ];
 
