@@ -82,52 +82,26 @@ class Rook extends Piece {
     }
     getPossibleTurns(cell, board) {
         let possibleTurns = [];
-        for (let i = cell.row + 1; i < 8; i++) {
-            if (board.getCellByCoords([i, cell.col]).piece) {
-                if (board.getCellByCoords([i, cell.col]).piece.color == this.color) {
-                    break
-                } else {
-                    possibleTurns.push(coordsToChess(i, cell.col));
-                    break
-                }
-            } else {
-                possibleTurns.push(coordsToChess(i, cell.col));
-            }
-        }
-        for (let i = cell.row - 1; i >= 0; i--) {
-            if (board.getCellByCoords([i, cell.col]).piece) {
-                if (board.getCellByCoords([i, cell.col]).piece.color == this.color) {
-                    break
-                } else {
-                    possibleTurns.push(coordsToChess(i, cell.col));
+        const directions = [
+            [1,0],
+            [-1,0],
+            [0,1],
+            [0,-1],
+        ]
+        for (let [dx,dy] of directions) {
+            let x = cell.col + dx
+            let y = cell.row + dy
+            while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                if (board.getCellByCoords(x,y).piece) {
+                    if (board.getCellByCoords(x,y).piece.color == this.color) {
+                        break
+                    }
+                    possibleTurns.push(coordsToChess(y,x))
                     break
                 }
-            } else {
-                possibleTurns.push(coordsToChess(i, cell.col));
-            }
-        }
-        for (let i = cell.col + 1; i < 8; i++) {
-            if (board.getCellByCoords([i, cell.col]).piece) {
-                if (board.getCellByCoords([i, cell.col]).piece.color == this.color) {
-                    break
-                } else {
-                    possibleTurns.push(coordsToChess(i, cell.col));
-                    break
-                }
-            } else {
-                possibleTurns.push(coordsToChess(i, cell.col));
-            }
-        }
-        for (let i = cell.col - 1; i >= 0; i--) {
-            if (board.getCellByCoords([i, cell.col]).piece) {
-                if (board.getCellByCoords([i, cell.col]).piece.color == this.color) {
-                    break
-                } else {
-                    possibleTurns.push(coordsToChess(i, cell.col));
-                    break
-                }
-            } else {
-                possibleTurns.push(coordsToChess(i, cell.col));
+                possibleTurns.push(coordsToChess(y,x))
+                x += dx
+                y += dy
             }
         }
         return possibleTurns;
@@ -158,29 +132,27 @@ class Bishop extends Piece {
     }
     getPossibleTurns(cell, board) {
         let possibleTurns = [];
-        for (let x = cell.col + 1, y = cell.row + 1; x < 8 && y < 8; x++, y++) {
-            possibleTurns.push(coordsToChess(y, x));
-            if (board.getCellByCoords([y, x]).piece) {
-                break
-            };
-        }
-        for (let x = cell.col + 1, y = cell.row - 1; x < 8 && y >= 0; x++, y--) {
-            possibleTurns.push(coordsToChess(y, x));
-            if (board.getCellByCoords([y, x]).piece) {
-                break
-            };
-        }
-        for (let x = cell.col - 1, y = cell.row - 1; x >= 0 && y >= 0; x--, y--) {
-            possibleTurns.push(coordsToChess(y, x));
-            if (board.getCellByCoords([y, x]).piece) {
-                break
-            };
-        }
-        for (let x = cell.col - 1, y = cell.row + 1; x >= 0 && y < 8; x--, y++) {
-            possibleTurns.push(coordsToChess(y, x));
-            if (board.getCellByCoords([y, x]).piece) {
-                break
-            };
+        const directions = [
+            [1,1],
+            [1,-1],
+            [-1,1],
+            [-1,-1],
+        ]
+        for (let [dx,dy] of directions) {
+            let x = cell.col + dx
+            let y = cell.row + dy
+            while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                if (board.getCellByCoords(x,y).piece) {
+                    if (board.getCellByCoords(x,y).piece.color == this.color) {
+                        break
+                    }
+                    possibleTurns.push(coordsToChess(y,x))
+                    break
+                }
+                possibleTurns.push(coordsToChess(y,x))
+                x += dx
+                y += dy
+            }
         }
         return possibleTurns;
     }
@@ -210,53 +182,31 @@ class Queen extends Piece {
     }
     getPossibleTurns(cell, board) {
         let possibleTurns = [];
-        for (let i = cell.row + 1; i < 8; i++) {
-            possibleTurns.push(coordsToChess(i, cell.col));
-            if (board.getCellByCoords([i, cell.col]).piece) {
-                break
-            };
-        }
-        for (let i = cell.row - 1; i >= 0; i--) {
-            possibleTurns.push(coordsToChess(i, cell.col));
-            if (board.getCellByCoords([i, cell.col]).piece) {
-                break
-            };
-        }
-        for (let i = cell.col + 1; i < 8; i++) {
-            possibleTurns.push(coordsToChess(cell.row, i));
-            if (board.getCellByCoords([cell.row, i]).piece) {
-                break
-            };
-        }
-        for (let i = cell.col - 1; i >= 0; i--) {
-            possibleTurns.push(coordsToChess(cell.row, i));
-            if (board.getCellByCoords([cell.row, i]).piece) {
-                break
-            };
-        }
-         for (let x = cell.col + 1, y = cell.row + 1; x < 8 && y < 8; x++, y++) {
-            possibleTurns.push(coordsToChess(y, x));
-            if (board.getCellByCoords([y, x]).piece) {
-                break
-            };
-        }
-        for (let x = cell.col + 1, y = cell.row - 1; x < 8 && y >= 0; x++, y--) {
-            possibleTurns.push(coordsToChess(y, x));
-            if (board.getCellByCoords([y, x]).piece) {
-                break
-            };
-        }
-        for (let x = cell.col - 1, y = cell.row - 1; x >= 0 && y >= 0; x--, y--) {
-            possibleTurns.push(coordsToChess(y, x));
-            if (board.getCellByCoords([y, x]).piece) {
-                break
-            };
-        }
-        for (let x = cell.col - 1, y = cell.row + 1; x >= 0 && y < 8; x--, y++) {
-            possibleTurns.push(coordsToChess(y, x));
-            if (board.getCellByCoords([y, x]).piece) {
-                break
-            };
+        const directions = [
+            [1,0],
+            [-1,0],
+            [0,1],
+            [0,-1],
+            [1,1],
+            [1,-1],
+            [-1,1],
+            [-1,-1],
+        ]
+        for (let [dx,dy] of directions) {
+            let x = cell.col + dx
+            let y = cell.row + dy
+            while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                if (board.getCellByCoords(x,y).piece) {
+                    if (board.getCellByCoords(x,y).piece.color == this.color) {
+                        break
+                    }
+                    possibleTurns.push(coordsToChess(y,x))
+                    break
+                }
+                possibleTurns.push(coordsToChess(y,x))
+                x += dx
+                y += dy
+            }
         }
         return possibleTurns;
     }
@@ -326,8 +276,8 @@ class Board {
         }
     }
 
-    getCellByCoords(coords) {
-        return this.rows[coords[0]].cells[coords[1]]
+    getCellByCoords(x, y) {
+        return this.rows[y].cells[x]
     }
     renderBoard() {
         let boardDiv = document.createElement('div');
