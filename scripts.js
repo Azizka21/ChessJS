@@ -112,16 +112,31 @@ class Knight extends Piece {
     constructor(color, pieceType = "Knight") {
         super(color, pieceType);
     }
-    getPossibleTurns(cell) {
+    getPossibleTurns(cell, board) {
         let possibleTurns = [];
-        possibleTurns.push(coordsToChess(cell.row + 2, cell.col + 1));
-        possibleTurns.push(coordsToChess(cell.row + 2, cell.col - 1));
-        possibleTurns.push(coordsToChess(cell.row + 1, cell.col - 2));
-        possibleTurns.push(coordsToChess(cell.row + 1, cell.col + 2));
-        possibleTurns.push(coordsToChess(cell.row - 1, cell.col - 2));
-        possibleTurns.push(coordsToChess(cell.row - 1, cell.col + 2));
-        possibleTurns.push(coordsToChess(cell.row - 2, cell.col - 1));
-        possibleTurns.push(coordsToChess(cell.row - 2, cell.col + 1))
+        const moves = [
+            [2,1],
+            [2,-1],
+            [1,-2],
+            [1,2],
+            [-1,-2],
+            [-1,2],
+            [-2,-1],
+            [-2,1],
+        ]
+        for (let [dx,dy] of moves) {
+            let x = cell.col + dx
+            let y = cell.row + dy
+            if (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                if (! board.getCellByCoords(x,y).piece) {
+                    possibleTurns.push(coordsToChess(y, x));
+                    continue;
+                }
+                if (board.getCellByCoords(x,y).piece.color !== this.color) {
+                    possibleTurns.push(coordsToChess(y, x));
+                }
+            }
+        }
         return possibleTurns;
     }
 }
@@ -162,17 +177,32 @@ class King extends Piece {
     constructor(color, pieceType = "King") {
         super(color, pieceType);
     }
-    getPossibleTurns(cell) {
+    getPossibleTurns(cell, board) {
         let possibleTurns = [];
-        possibleTurns.push(coordsToChess(cell.row + 1, cell.col));
-        possibleTurns.push(coordsToChess(cell.row + 1, cell.col + 1));
-        possibleTurns.push(coordsToChess(cell.row, cell.col + 1));
-        possibleTurns.push(coordsToChess(cell.row - 1, cell.col + 1));
-        possibleTurns.push(coordsToChess(cell.row - 1, cell.col));
-        possibleTurns.push(coordsToChess(cell.row - 1, cell.col - 1));
-        possibleTurns.push(coordsToChess(cell.row, cell.col - 1));
-        possibleTurns.push(coordsToChess(cell.row + 1, cell.col - 1));
-        return possibleTurns;
+        const moves = [
+            [0,1],
+            [0,-1],
+            [1,1],
+            [1,0],
+            [1,-1],
+            [-1,1],
+            [-1,0],
+            [-1,-1]
+        ]
+        for (let [dx,dy] of moves) {
+            let x = cell.col + dx
+            let y = cell.row + dy
+            if (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                if (! board.getCellByCoords(x,y).piece) {
+                    possibleTurns.push(coordsToChess(y, x));
+                    continue;
+                }
+                if (board.getCellByCoords(x,y).piece.color !== this.color) {
+                    possibleTurns.push(coordsToChess(y, x));
+                }
+            }
+        }
+       return possibleTurns
     }
 }
 
@@ -259,9 +289,10 @@ class Board {
     takePiece(cell) {
         this.picked = cell.jsCell.piece;
         this.possibleTurns = this.picked.getPossibleTurns(cell.jsCell, this)
-        console.log(this.possibleTurns)
+        this.possibleTurns.push(cell.jsCell.position)
         cell.jsCell.piece = null;
         cell.innerHTML = "";
+        this.renderPossibleTurns()
     }
 
     putPiece(cell) {
@@ -270,6 +301,8 @@ class Board {
             if (this.picked.pieceType == "Pawn" && (jsCell.row == 0 || jsCell.row == 7)) {
                 this.picked = new Queen(this.picked.color)
             }
+            // Важно что сначала удаляются точки с ходами, а уже потом добавляется фигура, потому что иначе она была бы lastChild
+            this.clearPossibleTurns()
             jsCell.piece = this.picked;
             this.renderPiece(cell);
             this.picked = null;
@@ -324,6 +357,26 @@ class Board {
             img.src = piecesPNG[cell.jsCell.piece.pieceType]
         }
         cell.replaceChildren(img);
+    }
+    renderPossibleTurns() {
+        /* Костыльная проверка вставляем мы или удаляем
+        if (picked) {
+
+        }
+
+        */
+        for (let position of this.possibleTurns) {
+            let coords = chessToCoords(position)
+            let cell = this.getCellByCoords(coords[1], coords[0])
+            cell.element.insertAdjacentHTML('beforeend', '<p>*</p>');
+        }
+    }
+    clearPossibleTurns() {
+        for (let position of this.possibleTurns) {
+            let coords = chessToCoords(position)
+            let cell = this.getCellByCoords(coords[1], coords[0])
+            cell.element.lastElementChild.remove()
+        }
     }
 }
 
