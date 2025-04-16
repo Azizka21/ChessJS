@@ -34,6 +34,7 @@ class Piece {
     constructor(color, pieceType) {
         this.color = color;
         this.pieceType = pieceType;
+        this.moves = 0
     };
     getPossibleTurns() {
         let possibleTurns = [];
@@ -42,36 +43,28 @@ class Piece {
 }
 
 class Pawn extends Piece {
-    constructor(color, pieceType = "Pawn") {
-        super(color, pieceType)
+    constructor(color, pieceType = "Pawn", moves) {
+        super(color, pieceType, moves)
     }
     getPossibleTurns(cell, board) {
         let possibleTurns = [];
-        if (this.color == topColor) {
-            if (! board.rows[cell.row + 1].cells[cell.col].piece)
-            {
-                possibleTurns.push(coordsToChess(cell.row + 1, cell.col))
-            }
-            if (board.rows[cell.row + 1].cells[cell.col - 1] && board.rows[cell.row + 1].cells[cell.col - 1].piece && board.rows[cell.row + 1].cells[cell.col - 1].piece.color == bottomColor)
-            {
-                possibleTurns.push(coordsToChess(cell.row + 1, cell.col - 1))
-            }
-            if (board.rows[cell.row + 1].cells[cell.col + 1] && board.rows[cell.row + 1].cells[cell.col + 1].piece && board.rows[cell.row + 1].cells[cell.col + 1].piece.color == bottomColor)
-            {
-                possibleTurns.push(coordsToChess(cell.row + 1, cell.col + 1))
-            }
-        } else {
-            if (!board.rows[cell.row - 1].cells[cell.col].piece) {
-                console.log(cell)
-                possibleTurns.push(coordsToChess(cell.row - 1, cell.col))
-            }
-            if (board.rows[cell.row - 1].cells[cell.col - 1] && board.rows[cell.row - 1].cells[cell.col - 1].piece && board.rows[cell.row - 1].cells[cell.col - 1].piece.color == topColor) {
-                possibleTurns.push(coordsToChess(cell.row - 1, cell.col - 1))
-            }
-            if (board.rows[cell.row - 1].cells[cell.col + 1] && board.rows[cell.row - 1].cells[cell.col + 1].piece && board.rows[cell.row - 1].cells[cell.col + 1].piece.color == topColor) {
-                possibleTurns.push(coordsToChess(cell.row - 1, cell.col + 1))
-            }
+        if (this.color == topColor) {}
+        const direction = this.color == topColor ? 1 : -1
+        if (! board.rows[cell.row + direction].cells[cell.col].piece) {
+            possibleTurns.push(coordsToChess(cell.col, cell.row + direction))
         }
+        if (! this.moves){
+            if (! board.rows[cell.row + direction * 2].cells[cell.col].piece) {
+            possibleTurns.push(coordsToChess(cell.col, cell.row + direction * 2))
+        }
+        }
+        if (board.rows[cell.row + direction].cells[cell.col - 1] && board.rows[cell.row + direction].cells[cell.col - 1].piece && board.rows[cell.row + direction].cells[cell.col - 1].piece.color !== this.color) {
+            possibleTurns.push(coordsToChess(cell.col - 1, cell.row + direction))
+        }
+        if (board.rows[cell.row + direction].cells[cell.col + 1] && board.rows[cell.row + direction].cells[cell.col + 1].piece && board.rows[cell.row + direction].cells[cell.col + 1].piece.color !== this.color) {
+            possibleTurns.push(coordsToChess(cell.col + 1, cell.row + direction))
+        }
+        console.log(possibleTurns)
         return possibleTurns;
     }
 }
@@ -96,10 +89,10 @@ class Rook extends Piece {
                     if (board.getCellByCoords(x,y).piece.color == this.color) {
                         break
                     }
-                    possibleTurns.push(coordsToChess(y,x))
+                    possibleTurns.push(coordsToChess(x,y))
                     break
                 }
-                possibleTurns.push(coordsToChess(y,x))
+                possibleTurns.push(coordsToChess(x,y))
                 x += dx
                 y += dy
             }
@@ -129,11 +122,11 @@ class Knight extends Piece {
             let y = cell.row + dy
             if (x >= 0 && x < 8 && y >= 0 && y < 8) {
                 if (! board.getCellByCoords(x,y).piece) {
-                    possibleTurns.push(coordsToChess(y, x));
+                    possibleTurns.push(coordsToChess(x,y));
                     continue;
                 }
                 if (board.getCellByCoords(x,y).piece.color !== this.color) {
-                    possibleTurns.push(coordsToChess(y, x));
+                    possibleTurns.push(coordsToChess(x,y));
                 }
             }
         }
@@ -161,10 +154,10 @@ class Bishop extends Piece {
                     if (board.getCellByCoords(x,y).piece.color == this.color) {
                         break
                     }
-                    possibleTurns.push(coordsToChess(y,x))
+                    possibleTurns.push(coordsToChess(x,y))
                     break
                 }
-                possibleTurns.push(coordsToChess(y,x))
+                possibleTurns.push(coordsToChess(x,y))
                 x += dx
                 y += dy
             }
@@ -194,11 +187,11 @@ class King extends Piece {
             let y = cell.row + dy
             if (x >= 0 && x < 8 && y >= 0 && y < 8) {
                 if (! board.getCellByCoords(x,y).piece) {
-                    possibleTurns.push(coordsToChess(y, x));
+                    possibleTurns.push(coordsToChess(x,y));
                     continue;
                 }
                 if (board.getCellByCoords(x,y).piece.color !== this.color) {
-                    possibleTurns.push(coordsToChess(y, x));
+                    possibleTurns.push(coordsToChess(x,y));
                 }
             }
         }
@@ -230,10 +223,10 @@ class Queen extends Piece {
                     if (board.getCellByCoords(x,y).piece.color == this.color) {
                         break
                     }
-                    possibleTurns.push(coordsToChess(y,x))
+                    possibleTurns.push(coordsToChess(x,y))
                     break
                 }
-                possibleTurns.push(coordsToChess(y,x))
+                possibleTurns.push(coordsToChess(x,y))
                 x += dx
                 y += dy
             }
@@ -246,7 +239,7 @@ class Cell {
     constructor(row, column, piece) {
         this.row = row
         this.col = column
-        this.position = coordsToChess(row,column);
+        this.position = coordsToChess(column, row);
         this.color = (row + column) % 2 == 0 ? "white-cell" : "black-cell"
         if (piece) {
             this.piece = piece
@@ -297,10 +290,11 @@ class Board {
 
     putPiece(cell) {
         let jsCell = cell.jsCell
-        if (this.possibleTurns.includes(coordsToChess(jsCell.row, jsCell.col))) {
+        if (this.possibleTurns.includes(coordsToChess(jsCell.col, jsCell.row))) {
             if (this.picked.pieceType == "Pawn" && (jsCell.row == 0 || jsCell.row == 7)) {
                 this.picked = new Queen(this.picked.color)
             }
+            this.picked.moves += 1
             // Важно что сначала удаляются точки с ходами, а уже потом добавляется фигура, потому что иначе она была бы lastChild
             this.clearPossibleTurns()
             jsCell.piece = this.picked;
@@ -368,7 +362,7 @@ class Board {
         for (let position of this.possibleTurns) {
             let coords = chessToCoords(position)
             let cell = this.getCellByCoords(coords[1], coords[0])
-            cell.element.insertAdjacentHTML('beforeend', '<p>*</p>');
+            cell.element.insertAdjacentHTML('beforeend', '<p>•</p>');
         }
     }
     clearPossibleTurns() {
@@ -380,7 +374,7 @@ class Board {
     }
 }
 
-function coordsToChess(row, column) {
+function coordsToChess(column, row) {
     const numToLetter = "abcdefgh"
     return numToLetter[column] + (row+1).toString()
 }
