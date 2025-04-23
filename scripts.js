@@ -1,14 +1,14 @@
 window.onload = function() {
-    Board = new Board();
-    boardDiv = Board.renderBoard();
+    board = new Board();
+    boardDiv = board.renderBoard();
     boardDiv.addEventListener('click', (ev) => {
         const cell = ev.target.closest('.cell')
         if (cell) {
-            if (Board.picked) {
-                Board.putPiece(cell)
+            if (board.picked) {
+                board.putPiece(cell)
             } else {
-                if (cell.jsCell.piece) {
-                    Board.takePiece(cell)
+                if (cell.jsCell.piece && cell.jsCell.piece.color === board.turnColor) {
+                    board.takePiece(cell)
                 }
             }
         }
@@ -19,7 +19,6 @@ window.onload = function() {
 document.addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         console.log("Нажат Enter!");
-        Board.movePiece("a1","c2")
     }
 })
 
@@ -266,6 +265,7 @@ class Board {
         for (let i = 0; i < 8; i++) {
             this.rows.push(new Row(i, statement[i]));
         }
+        this.turnColor = "white"
         console.dir(this)
     }
 
@@ -300,11 +300,20 @@ class Board {
             jsCell.piece = this.picked;
             this.renderPiece(cell);
             this.picked = null;
+            this.changeTurnColor()
         }
     }
 
     getCellByCoords(x, y) {
         return this.rows[y].cells[x]
+    }
+
+    changeTurnColor() {
+        if (this.turnColor === "white") {
+            this.turnColor = "black"
+        } else {
+            this.turnColor = "white"
+        }
     }
     renderBoard() {
         let boardDiv = document.createElement('div');
