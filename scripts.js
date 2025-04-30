@@ -356,6 +356,8 @@ class Board {
                     this.enPassantCell.innerHTML = ""
                     this.enPassantCell.jsCell.piece = null
                 }
+                this.enPassant = null
+                this.enPassantCell = null
             }
             this.picked.moves += 1
             // Важно что сначала удаляются точки с ходами, а уже потом добавляется фигура, потому что иначе она была бы lastChild
