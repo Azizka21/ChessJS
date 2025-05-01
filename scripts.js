@@ -300,14 +300,16 @@ class Cell {
 class Board {
     constructor(statement = startposition) {
         this.cells = []
-        this.blackPieces = []
-        this.whitePieces = []
+        this.blackPieceCells = []
+        this.whitePieceCells = []
         for (let rowIndex = 0; rowIndex < 8; rowIndex++) {
             let row = []
             for (let col = 0; col < 8; col++) {
                 let piece = this.createPiece(statement[rowIndex][col])
-                row.push(new Cell(rowIndex, col, piece))
-            }
+                let cell = new Cell(rowIndex, col, piece)
+                row.push(cell)
+                this.addCellToArray(cell)
+                }
             this.cells.push(row)
         }
         this.turnColor = "white"
@@ -335,6 +337,7 @@ class Board {
         this.oldCol = cell.jsCell.col;
         this.possibleTurns = this.picked.getPossibleTurns(cell.jsCell, this);
         this.possibleTurns.push(cell.jsCell.position);
+        this.removeCellFromArray(cell.jsCell)
         cell.jsCell.piece = null;
         cell.innerHTML = "";
         this.renderPossibleTurns();
@@ -362,8 +365,10 @@ class Board {
             this.picked.moves += 1
             // Важно что сначала удаляются точки с ходами, а уже потом добавляется фигура, потому что иначе она была бы lastChild
             this.clearPossibleTurns()
-            this.removeFromArray(jsCell.piece)
+            // Важно, что сперва удаляем со старого списка клеток, а потом вставляем фигуру
+            this.removeCellFromArray(jsCell)
             jsCell.piece = this.picked;
+            this.addCellToArray(jsCell)
             this.renderPiece(cell);
             this.picked = null;
             this.changeTurnColor()
@@ -382,12 +387,20 @@ class Board {
         }
     }
 
-    removeFromArray(piece) {
-        if (! piece) {
+    addCellToArray(cell) {
+        if (! cell.piece) {
             return null
         }
-        let arr = piece.color === "white" ? this.whitePieces : this.blackPieces;
-        const index = arr.indexOf(piece);
+        let arr = cell.piece.color === "white" ? this.whitePieceCells : this.blackPieceCells;
+        arr.push(cell);
+    }
+
+    removeCellFromArray(cell) {
+        if (! cell.piece) {
+            return null
+        }
+        let arr = cell.piece.color === "white" ? this.whitePieceCells : this.blackPieceCells;
+        const index = arr.indexOf(cell);
         if (index !== -1) {
             arr.splice(index, 1);
         }
@@ -418,12 +431,6 @@ class Board {
         if (pieceConfig) {
             const PieceClass = pieceClasses[pieceConfig[1]];
             const piece = new PieceClass(pieceConfig[0], pieceConfig[1]);
-            if (piece.color === "white") {
-                this.whitePieces.push(piece)
-            }
-            if (piece.color === "black") {
-                this.blackPieces.push(piece)
-            }
             return piece
         } else {
             return null
