@@ -350,10 +350,6 @@ class Board {
                 this.removeFromArray(this.picked)
                 this.picked = this.createPiece([this.picked.color, "Queen"])
             }
-            if (this.picked.pieceType == "Pawn" && Math.abs(jsCell.row - this.oldRow) === 2) {
-                this.enPassant = coordsToChess(this.oldCol, this.oldRow + this.picked.direction)
-                this.enPassantCell = cell
-            }
             if (this.enPassant) {
                 if (this.picked.pieceType == "Pawn" && jsCell.position === this.enPassant) {
                     this.enPassantCell.innerHTML = ""
@@ -361,6 +357,10 @@ class Board {
                 }
                 this.enPassant = null
                 this.enPassantCell = null
+            }
+            if (this.picked.pieceType == "Pawn" && Math.abs(jsCell.row - this.oldRow) === 2) {
+                this.enPassant = coordsToChess(this.oldCol, this.oldRow + this.picked.direction)
+                this.enPassantCell = cell
             }
             this.picked.moves += 1
             // Важно что сначала удаляются точки с ходами, а уже потом добавляется фигура, потому что иначе она была бы lastChild
