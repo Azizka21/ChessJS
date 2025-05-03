@@ -310,6 +310,7 @@ class Board {
         this.picked = null
         this.oldRow = null
         this.oldCol = null
+        this.oldPos = null
         console.dir(this)
     }
 
@@ -327,7 +328,7 @@ class Board {
         this.picked = cell.jsCell.piece;
         this.oldRow = cell.jsCell.row;
         this.oldCol = cell.jsCell.col;
-        debugger;
+        this.oldPos = cell.jsCell.position;
         this.possibleTurns = this.picked.getPossibleTurns(cell.jsCell, this);
         this.possibleTurns.push(cell.jsCell.position);
         this.removeCellFromArray(cell.jsCell)
@@ -355,7 +356,10 @@ class Board {
                 this.enPassant = coordsToChess(this.oldCol, this.oldRow + this.picked.direction)
                 this.enPassantCell = cell
             }
-            this.picked.moves += 1
+            if (! (this.oldPos === jsCell.position)) {
+                this.picked.moves += 1
+                this.changeTurnColor()
+            }
             // Важно что сначала удаляются точки с ходами, а уже потом добавляется фигура, потому что иначе она была бы lastChild
             this.clearPossibleTurns()
             // Важно, что сперва удаляем со старого списка клеток, а потом вставляем фигуру
@@ -366,7 +370,6 @@ class Board {
             this.addCellToArray(jsCell)
             this.renderPiece(cell);
             this.picked = null;
-            this.changeTurnColor()
         }
     }
 
