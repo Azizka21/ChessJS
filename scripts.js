@@ -39,16 +39,6 @@ class Piece {
         this.possibleTurns = [];
         return this.possibleTurns
     }
-    turnValidation(cell, board, x, y) {
-        let oldPiece = board.getCellByCoords(x, y).piece
-        cell.piece = null;
-        board.getCellByCoords(x, y).piece = this
-        if (! board.kingscare()) {
-            this.possibleTurns.push(coordsToChess(x,y))
-        }
-        cell.piece = this
-        board.getCellByCoords(x,y).piece = oldPiece
-    }
 }
 
 class Pawn extends Piece {
@@ -56,38 +46,38 @@ class Pawn extends Piece {
         super(color, pieceType, moves)
         this.direction = this.color == topColor ? 1 : -1
     }
-    getPossibleTurns(cell, board) {
+    getPossibleTurns(cell, board, checkSafety = true) {
         this.possibleTurns = [];
         if (! board.cells[cell.row + this.direction][cell.col].piece) {
-            if (board.isSafeMove(cell, board.getCellByCoords(cell.col, cell.row + this.direction))) {
+            if (! checkSafety || board.isSafeMove(cell, board.getCellByCoords(cell.col, cell.row + this.direction))) {
                 this.possibleTurns.push(coordsToChess(cell.col, cell.row + this.direction))
             }
         }
         if (! this.moves){
             if (! board.cells[cell.row + this.direction * 2][cell.col].piece) {
-                if (board.isSafeMove(cell, board.getCellByCoords(cell.col, cell.row + this.direction * 2))) {
+                if (! checkSafety || board.isSafeMove(cell, board.getCellByCoords(cell.col, cell.row + this.direction * 2))) {
                     this.possibleTurns.push(coordsToChess(cell.col, cell.row + this.direction * 2))
             }
         }
         }
         if (board.cells[cell.row + this.direction][cell.col - 1] && board.cells[cell.row + this.direction][cell.col - 1].piece && board.cells[cell.row + this.direction][cell.col - 1].piece.color !== this.color) {
-            if (board.isSafeMove(cell, board.getCellByCoords( cell.col - 1, cell.row + this.direction))) {
+            if (! checkSafety || board.isSafeMove(cell, board.getCellByCoords( cell.col - 1, cell.row + this.direction))) {
                 this.possibleTurns.push(coordsToChess( cell.col - 1, cell.row + this.direction))
             }
         }
         if (board.cells[cell.row + this.direction][cell.col + 1] && board.cells[cell.row + this.direction][cell.col + 1].piece && board.cells[cell.row + this.direction][cell.col + 1].piece.color !== this.color) {
-            if (board.isSafeMove(cell, board.getCellByCoords(cell.col + 1, cell.row + this.direction))){
+            if (! checkSafety ||  board.isSafeMove(cell, board.getCellByCoords(cell.col + 1, cell.row + this.direction))){
                 this.possibleTurns.push(coordsToChess( cell.col + 1, cell.row + this.direction))
             }
         }
         if (board.enPassant) {
             if (board.cells[cell.row + this.direction][cell.col - 1] && board.cells[cell.row + this.direction][cell.col - 1].position === board.enPassant) {
-                if (board.isSafeMove(cell, board.getCellByCoords(cell.col - 1, cell.row + this.direction))) {
+                if (! checkSafety || board.isSafeMove(cell, board.getCellByCoords(cell.col - 1, cell.row + this.direction))) {
                     this.possibleTurns.push(coordsToChess( cell.col - 1, cell.row + this.direction))
                 }
             }
             if (board.cells[cell.row + this.direction][cell.col + 1] && board.cells[cell.row + this.direction][cell.col + 1].position === board.enPassant) {
-                if (board.isSafeMove(cell, board.getCellByCoords(cell.col + 1, cell.row + this.direction))) {
+                if (! checkSafety || board.isSafeMove(cell, board.getCellByCoords(cell.col + 1, cell.row + this.direction))) {
                     this.possibleTurns.push(coordsToChess( cell.col + 1, cell.row + this.direction))
                 }
             }
@@ -100,7 +90,7 @@ class Rook extends Piece {
     constructor(color, pieceType = "Rook") {
         super(color, pieceType);
     }
-    getPossibleTurns(cell, board) {
+    getPossibleTurns(cell, board, checkSafety = true) {
         this.possibleTurns = [];
         const directions = [
             [1,0],
@@ -117,12 +107,12 @@ class Rook extends Piece {
                     if (newCell.piece.color == this.color) {
                         break
                     }
-                    if (board.isSafeMove(cell, newCell)){
+                    if (! checkSafety || board.isSafeMove(cell, newCell)){
                         this.possibleTurns.push(coordsToChess(x, y))
                     }
                     break
                 }
-                if (board.isSafeMove(cell, newCell)) {
+                if (! checkSafety || board.isSafeMove(cell, newCell)) {
                     this.possibleTurns.push(coordsToChess(x, y))
                 }
                 x += dx
@@ -137,7 +127,7 @@ class Knight extends Piece {
     constructor(color, pieceType = "Knight") {
         super(color, pieceType);
     }
-    getPossibleTurns(cell, board) {
+    getPossibleTurns(cell, board, checkSafety = true) {
         this.possibleTurns = [];
         const moves = [
             [2,1],
@@ -155,13 +145,13 @@ class Knight extends Piece {
             if (x >= 0 && x < 8 && y >= 0 && y < 8) {
                 let newCell = board.getCellByCoords(x, y);
                 if (! newCell.piece) {
-                    if (board.isSafeMove(cell, newCell)){
+                    if (! checkSafety || board.isSafeMove(cell, newCell)){
                         this.possibleTurns.push(coordsToChess(x, y))
                     }
                     continue;
                 }
                 if (newCell.piece.color !== this.color) {
-                    if (board.isSafeMove(cell, newCell)){
+                    if (! checkSafety || board.isSafeMove(cell, newCell)){
                         this.possibleTurns.push(coordsToChess(x, y))
                     }
                 }
@@ -175,7 +165,7 @@ class Bishop extends Piece {
     constructor(color, pieceType = "Bishop") {
         super(color, pieceType);
     }
-    getPossibleTurns(cell, board) {
+    getPossibleTurns(cell, board, checkSafety = true) {
         this.possibleTurns = [];
         const directions = [
             [1,1],
@@ -192,12 +182,12 @@ class Bishop extends Piece {
                     if (newCell.piece.color == this.color) {
                         break
                     }
-                    if (board.isSafeMove(cell, newCell)){
+                    if (! checkSafety || board.isSafeMove(cell, newCell)){
                         this.possibleTurns.push(coordsToChess(x, y))
                     }
                     break
                 }
-                if (board.isSafeMove(cell, newCell)){
+                if (! checkSafety || board.isSafeMove(cell, newCell)){
                         this.possibleTurns.push(coordsToChess(x, y))
                     }
                 x += dx
@@ -212,7 +202,7 @@ class King extends Piece {
     constructor(color, pieceType = "King") {
         super(color, pieceType);
     }
-    getPossibleTurns(cell, board) {
+    getPossibleTurns(cell, board, checkSafety = true) {
         this.possibleTurns = [];
         const moves = [
             [0,1],
@@ -230,19 +220,19 @@ class King extends Piece {
             if (x >= 0 && x < 8 && y >= 0 && y < 8) {
                 let newCell = board.getCellByCoords(x, y);
                 if (! newCell.piece) {
-                    if (board.isSafeMove(cell, newCell)){
+                    if (! checkSafety || board.isSafeMove(cell, newCell)){
                         this.possibleTurns.push(coordsToChess(x, y))
                     }
                     continue;
                 }
                 if (newCell.piece.color !== this.color) {
-                    if (board.isSafeMove(cell, newCell)){
+                    if (! checkSafety || board.isSafeMove(cell, newCell)){
                         this.possibleTurns.push(coordsToChess(x, y))
                     }
                 }
             }
         }
-       return possibleTurns
+       return this.possibleTurns
     }
 }
 
@@ -250,7 +240,7 @@ class Queen extends Piece {
     constructor(color, pieceType = "Queen") {
         super(color, pieceType);
     }
-    getPossibleTurns(cell, board) {
+    getPossibleTurns(cell, board, checkSafety = true) {
         this.possibleTurns = [];
         const directions = [
             [1,0],
@@ -271,12 +261,12 @@ class Queen extends Piece {
                     if (newCell.piece.color == this.color) {
                         break
                     }
-                    if (board.isSafeMove(cell, newCell)){
+                    if (! checkSafety || board.isSafeMove(cell, newCell)){
                         this.possibleTurns.push(coordsToChess(x, y))
                     }
                     break
                 }
-                if (board.isSafeMove(cell, newCell)){
+                if (! checkSafety || board.isSafeMove(cell, newCell)){
                     this.possibleTurns.push(coordsToChess(x, y))
                 }
                 x += dx
@@ -308,8 +298,10 @@ class Board {
                 let piece = this.createPiece(statement[rowIndex][col])
                 let cell = new Cell(rowIndex, col, piece)
                 row.push(cell)
-                this.addCellToArray(cell)
+                if (piece) {
+                    this.addCellToArray(cell)
                 }
+            }
             this.cells.push(row)
         }
         this.turnColor = "white"
@@ -335,6 +327,7 @@ class Board {
         this.picked = cell.jsCell.piece;
         this.oldRow = cell.jsCell.row;
         this.oldCol = cell.jsCell.col;
+        debugger;
         this.possibleTurns = this.picked.getPossibleTurns(cell.jsCell, this);
         this.possibleTurns.push(cell.jsCell.position);
         this.removeCellFromArray(cell.jsCell)
@@ -366,7 +359,9 @@ class Board {
             // Важно что сначала удаляются точки с ходами, а уже потом добавляется фигура, потому что иначе она была бы lastChild
             this.clearPossibleTurns()
             // Важно, что сперва удаляем со старого списка клеток, а потом вставляем фигуру
-            this.removeCellFromArray(jsCell)
+            if (jsCell.piece) {
+                this.removeCellFromArray(jsCell)
+            }
             jsCell.piece = this.picked;
             this.addCellToArray(jsCell)
             this.renderPiece(cell);
@@ -388,17 +383,11 @@ class Board {
     }
 
     addCellToArray(cell) {
-        if (! cell.piece) {
-            return null
-        }
         let arr = cell.piece.color === "white" ? this.whitePieceCells : this.blackPieceCells;
         arr.push(cell);
     }
 
     removeCellFromArray(cell) {
-        if (! cell.piece) {
-            return null
-        }
         let arr = cell.piece.color === "white" ? this.whitePieceCells : this.blackPieceCells;
         const index = arr.indexOf(cell);
         if (index !== -1) {
@@ -479,25 +468,42 @@ class Board {
         for (let position of this.possibleTurns) {
             let coords = chessToCoords(position)
             let cell = this.getCellByCoords(coords[1], coords[0])
-            // Тут был странный баг. Условие помогло, но интересно что было не так
             if (cell.element.lastElementChild) {
                 cell.element.lastElementChild.remove()
             }
         }
     }
     isSafeMove(oldCell, newCell) {
+        this.removeCellFromArray(oldCell)
+        if (newCell.piece) {
+            this.removeCellFromArray(newCell)
+        }
         let endPiece = newCell.piece
         newCell.piece = oldCell.piece
         oldCell.piece = null
+        this.addCellToArray(newCell)
         let isSafe = false
-        if (! this.kingscare()) {
+        if (! this.isCheck()) {
             isSafe = true
         }
+        this.removeCellFromArray(newCell)
         oldCell.piece = newCell.piece
         newCell.piece = endPiece
+        this.addCellToArray(oldCell)
+        if (newCell.piece) {
+            this.removeCellFromArray(newCell)
+        }
         return isSafe
     }
-    kingscare() {
+
+    isCheck() {
+        let kingCell = (this.picked.color === "white" ? this.whitePieceCells : this.blackPieceCells).filter((cell) => cell.piece.pieceType === "King")[0]
+        let arr = this.picked.color === "white" ? this.blackPieceCells : this.whitePieceCells;
+        for (let cell of arr) {
+            if (cell.piece.getPossibleTurns(cell, this, false).includes(kingCell.position)){
+                return true
+            }
+        }
         return false
     }
 }
