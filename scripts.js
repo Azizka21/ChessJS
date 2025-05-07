@@ -341,12 +341,12 @@ class Board {
         let jsCell = cell.jsCell
         if (this.possibleTurns.includes(coordsToChess(jsCell.col, jsCell.row))) {
             if (this.picked.pieceType == "Pawn" && (jsCell.row == 0 || jsCell.row == 7)) {
-                this.removeFromArray(this.picked)
                 this.picked = this.createPiece([this.picked.color, "Queen"])
             }
             if (this.enPassant) {
                 if (this.picked.pieceType == "Pawn" && jsCell.position === this.enPassant) {
                     this.enPassantCell.innerHTML = ""
+                    this.removeCellFromArray(this.enPassantCell.jsCell)
                     this.enPassantCell.jsCell.piece = null
                 }
                 this.enPassant = null
@@ -367,7 +367,10 @@ class Board {
                 this.removeCellFromArray(jsCell)
             }
             jsCell.piece = this.picked;
-            this.addCellToArray(jsCell)
+            if (this.picked.pieceType == "Pawn" && (jsCell.row == 0 || jsCell.row == 7)) {
+                jsCell.piece = this.createPiece([this.picked.color, "Queen"])
+            }
+            this.addCellToArray(jsCell);
             this.renderPiece(cell);
             this.picked = null;
         }
@@ -494,7 +497,7 @@ class Board {
         newCell.piece = endPiece
         this.addCellToArray(oldCell)
         if (newCell.piece) {
-            this.removeCellFromArray(newCell)
+            this.addCellToArray(newCell)
         }
         return isSafe
     }
