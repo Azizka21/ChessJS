@@ -4,12 +4,12 @@ window.onload = function() {
     boardDiv.addEventListener('click', (ev) => {
         const cell = ev.target.closest('.cell')
         if (cell) {
-            if (board.picked) {
-                board.putPiece(cell)
-            } else {
+            if (board.isTaking) {
                 if (cell.jsCell.piece && cell.jsCell.piece.color === board.turnColor) {
                     board.takePiece(cell)
                 }
+            } else {
+                board.putPiece(cell)
             }
         }
     })
@@ -256,73 +256,60 @@ class Board {
         this.turnColor = "white"
         this.enPassant = null
         this.enPassantCell = null
-        this.picked = null
-        this.oldRow = null
-        this.oldCol = null
-        this.oldPos = null
+        this.oldCell
+        this.isTaking = true
         console.dir(this)
     }
 
-    movePiece(oldPos, newPos) {
-        oldPos = chessToCoords(oldPos);
-        newPos = chessToCoords(newPos);
-        let oldCell = this.getCellByCoords(oldPos);
-        let newCell = this.getCellByCoords(newPos);
+    movePiece(oldCell, newCell, isVirtual = false) {
+        this.removeCellFromArray(oldCell);
         let piece = oldCell.piece;
         oldCell.piece = null;
-        newCell.piece = piece;
-    }
 
-    takePiece(cell) {
-        this.picked = cell.jsCell.piece;
-        this.oldRow = cell.jsCell.row;
-        this.oldCol = cell.jsCell.col;
-        this.oldPos = cell.jsCell.position;
-        debugger;
-        this.possibleTurns = this.picked.getPossibleTurns(cell.jsCell, this);
-        this.possibleTurns.push(cell.jsCell.position);
-        this.removeCellFromArray(cell.jsCell)
-        cell.jsCell.piece = null;
-        cell.innerHTML = "";
-        this.renderPossibleTurns();
-    }
-
-    putPiece(cell) {
-        let jsCell = cell.jsCell
-        if (this.possibleTurns.includes(coordsToChess(jsCell.col, jsCell.row))) {
-            if (this.picked.pieceType == "Pawn" && (jsCell.row == 0 || jsCell.row == 7)) {
-                this.picked = this.createPiece([this.picked.color, "Queen"])
-            }
+        if (piece.pieceType === "Pawn" && (newCell.row == 0 || newCell.row === 7)) {
+            piece = this.createPiece([piece.color, "Queen"])
+        }
+        if (! isVirtual) {
             if (this.enPassant) {
-                if (this.picked.pieceType == "Pawn" && jsCell.position === this.enPassant) {
-                    this.enPassantCell.innerHTML = ""
-                    this.removeCellFromArray(this.enPassantCell.jsCell)
-                    this.enPassantCell.jsCell.piece = null
+                if (piece.pieceType === "Pawn" && newCell.position === this.enPassant) {
+                    this.enPassantCell.element.innerHTML = ""
+                    this.removeCellFromArray(this.enPassantCell)
+                    this.enPassantCell.piece = null
                 }
                 this.enPassant = null
                 this.enPassantCell = null
             }
-            if (this.picked.pieceType == "Pawn" && Math.abs(jsCell.row - this.oldRow) === 2) {
-                this.enPassant = coordsToChess(this.oldCol, this.oldRow + this.picked.direction)
-                this.enPassantCell = cell
+            if (piece.pieceType === "Pawn" && Math.abs(newCell.row - oldCell.row) === 2) {
+                this.enPassant = coordsToChess(this.oldCell.col, this.oldCell.row + piece.direction)
+                this.enPassantCell = newCell
             }
-            if (! (this.oldPos === jsCell.position)) {
-                this.picked.movesCount += 1
+        }
+        if (newCell.piece) {
+            this.removeCellFromArray(newCell);
+        }
+        newCell.piece = piece
+        this.addCellToArray(newCell)
+    }
+
+    takePiece(cell) {
+        this.oldCell = cell.jsCell;
+        this.possibleTurns = cell.jsCell.piece.getPossibleTurns(cell.jsCell, this);
+        this.possibleTurns.push(cell.jsCell.position);
+        cell.innerHTML = "";
+        this.renderPossibleTurns();
+        this.isTaking = false
+    }
+
+    putPiece(cell) {
+        if (this.possibleTurns.includes(coordsToChess(cell.jsCell.col, cell.jsCell.row))) {
+            this.movePiece(this.oldCell, cell.jsCell);
+            this.clearPossibleTurns();
+            this.renderPiece(cell);
+            if (! (this.oldCell.position === cell.jsCell.position)) {
+                cell.jsCell.piece.movesCount += 1
                 this.changeTurnColor()
             }
-            // Важно что сначала удаляются точки с ходами, а уже потом добавляется фигура, потому что иначе она была бы lastChild
-            this.clearPossibleTurns()
-            // Важно, что сперва удаляем со старого списка клеток, а потом вставляем фигуру
-            if (jsCell.piece) {
-                this.removeCellFromArray(jsCell)
-            }
-            jsCell.piece = this.picked;
-            if (this.picked.pieceType == "Pawn" && (jsCell.row == 0 || jsCell.row == 7)) {
-                jsCell.piece = this.createPiece([this.picked.color, "Queen"])
-            }
-            this.addCellToArray(jsCell);
-            this.renderPiece(cell);
-            this.picked = null;
+            this.isTaking = true;
         }
     }
 
@@ -430,31 +417,23 @@ class Board {
         }
     }
     isSafeMove(oldCell, newCell) {
-        this.removeCellFromArray(oldCell)
-        if (newCell.piece) {
-            this.removeCellFromArray(newCell)
-        }
-        let endPiece = newCell.piece
-        newCell.piece = oldCell.piece
-        oldCell.piece = null
-        this.addCellToArray(newCell)
-        let isSafe = false
-        if (! this.isCheck()) {
-            isSafe = true
-        }
+        let movingPiece = oldCell.piece
+        let capturedPiece = newCell.piece
+        this.movePiece(oldCell, newCell, true)
+        let isSafe = ! this.isCheck()
         this.removeCellFromArray(newCell)
-        oldCell.piece = newCell.piece
-        newCell.piece = endPiece
-        this.addCellToArray(oldCell)
+        newCell.piece = capturedPiece
         if (newCell.piece) {
             this.addCellToArray(newCell)
         }
+        oldCell.piece = movingPiece
+        this.addCellToArray(oldCell)
         return isSafe
     }
 
     isCheck() {
-        let kingCell = (this.picked.color === "white" ? this.whitePieceCells : this.blackPieceCells).filter((cell) => cell.piece.pieceType === "King")[0]
-        let arr = this.picked.color === "white" ? this.blackPieceCells : this.whitePieceCells;
+        let kingCell = (this.turnColor === "white" ? this.whitePieceCells : this.blackPieceCells).filter((cell) => cell.piece.pieceType === "King")[0]
+        let arr = this.turnColor === "white" ? this.blackPieceCells : this.whitePieceCells;
         for (let cell of arr) {
             if (cell.piece.getPossibleTurns(cell, this, false).includes(kingCell.position)){
                 return true
