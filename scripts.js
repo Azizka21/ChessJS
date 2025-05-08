@@ -33,7 +33,7 @@ class Piece {
     constructor(color, pieceType) {
         this.color = color;
         this.pieceType = pieceType;
-        this.moves = 0
+        this.movesCount = 0
     };
     getPossibleTurns() {
         this.possibleTurns = [];
@@ -172,7 +172,7 @@ class King extends StepPiece {
     }
     getPossibleTurns(cell, board, checkSafety = true) {
         this.possibleTurns =  super.getPossibleTurns(cell, board, checkSafety);
-        if (this.moves === 0){
+        if (! this.movesCount){
 
         }
         return this.possibleTurns
@@ -181,8 +181,8 @@ class King extends StepPiece {
 
 
 class Pawn extends Piece {
-    constructor(color, pieceType = "Pawn", moves) {
-        super(color, pieceType, moves)
+    constructor(color, pieceType = "Pawn") {
+        super(color, pieceType)
         this.direction = this.color == topColor ? 1 : -1
     }
     getPossibleTurns(cell, board, checkSafety = true) {
@@ -192,7 +192,7 @@ class Pawn extends Piece {
                 this.possibleTurns.push(coordsToChess(cell.col, cell.row + this.direction))
             }
         }
-        if (! this.moves){
+        if (! this.movesCount){
             if (! board.cells[cell.row + this.direction * 2][cell.col].piece) {
                 if (! checkSafety || board.isSafeMove(cell, board.getCellByCoords(cell.col, cell.row + this.direction * 2))) {
                     this.possibleTurns.push(coordsToChess(cell.col, cell.row + this.direction * 2))
@@ -278,6 +278,7 @@ class Board {
         this.oldRow = cell.jsCell.row;
         this.oldCol = cell.jsCell.col;
         this.oldPos = cell.jsCell.position;
+        debugger;
         this.possibleTurns = this.picked.getPossibleTurns(cell.jsCell, this);
         this.possibleTurns.push(cell.jsCell.position);
         this.removeCellFromArray(cell.jsCell)
@@ -306,7 +307,7 @@ class Board {
                 this.enPassantCell = cell
             }
             if (! (this.oldPos === jsCell.position)) {
-                this.picked.moves += 1
+                this.picked.movesCount += 1
                 this.changeTurnColor()
             }
             // Важно что сначала удаляются точки с ходами, а уже потом добавляется фигура, потому что иначе она была бы lastChild
