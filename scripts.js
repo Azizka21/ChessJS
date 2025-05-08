@@ -41,6 +41,145 @@ class Piece {
     }
 }
 
+class SlidePiece extends Piece {
+    constructor(color, pieceType, directions) {
+        super(color, pieceType);
+        this.directions = directions
+    }
+
+    getPossibleTurns(cell, board, checkSafety = true) {
+        this.possibleTurns = [];
+        for (let [dx, dy] of this.directions) {
+            let x = cell.col + dx
+            let y = cell.row + dy
+            while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                let newCell = board.getCellByCoords(x, y);
+                if (newCell.piece) {
+                    if (newCell.piece.color == this.color) {
+                        break
+                    }
+                    if (!checkSafety || board.isSafeMove(cell, newCell)) {
+                        this.possibleTurns.push(coordsToChess(x, y))
+                    }
+                    break
+                }
+                if (!checkSafety || board.isSafeMove(cell, newCell)) {
+                    this.possibleTurns.push(coordsToChess(x, y))
+                }
+                x += dx
+                y += dy
+            }
+        }
+        return this.possibleTurns
+    }
+}
+
+class StepPiece extends Piece {
+    constructor(color, pieceType, moves) {
+        super(color, pieceType);
+        this.moves = moves
+    }
+    getPossibleTurns(cell, board, checkSafety = true) {
+        this.possibleTurns = [];
+        for (let [dx, dy] of this.moves) {
+            let x = cell.col + dx
+            let y = cell.row + dy
+            if (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                let newCell = board.getCellByCoords(x, y);
+                if (!newCell.piece) {
+                    if (!checkSafety || board.isSafeMove(cell, newCell)) {
+                        this.possibleTurns.push(coordsToChess(x, y))
+                    }
+                    continue;
+                }
+                if (newCell.piece.color !== this.color) {
+                    if (!checkSafety || board.isSafeMove(cell, newCell)) {
+                        this.possibleTurns.push(coordsToChess(x, y))
+                    }
+                }
+            }
+        }
+        return this.possibleTurns
+    }
+}
+
+
+class Rook extends SlidePiece {
+    constructor(color) {
+        super(color, "Rook", [
+            [1,0],
+            [-1,0],
+            [0,1],
+            [0,-1],
+        ]);
+    }
+}
+
+class Bishop extends SlidePiece {
+    constructor(color,) {
+        super(color, "Bishop", [
+            [1,1],
+            [1,-1],
+            [-1,1],
+            [-1,-1],
+        ]);
+    }
+}
+
+class Queen extends SlidePiece {
+    constructor(color) {
+        super(color, "Queen", [
+            [1,0],
+            [-1,0],
+            [0,1],
+            [0,-1],
+            [1,1],
+            [1,-1],
+            [-1,1],
+            [-1,-1],
+        ]);
+    }
+}
+
+
+class Knight extends StepPiece {
+    constructor(color) {
+        super(color, "Knight", [
+            [2, 1],
+            [2, -1],
+            [1, -2],
+            [1, 2],
+            [-1, -2],
+            [-1, 2],
+            [-2, -1],
+            [-2, 1],
+        ]);
+    }
+}
+
+class King extends StepPiece {
+    constructor(color) {
+        super(color, "King", [
+            [0,1],
+            [0,-1],
+            [1,1],
+            [1,0],
+            [1,-1],
+            [-1,1],
+            [-1,0],
+            [-1,-1]
+        ]);
+    }
+    getPossibleTurns(cell, board, checkSafety = true) {
+        this.possibleTurns =  super.getPossibleTurns(cell, board, checkSafety);
+        if (this.moves === 0){
+
+        }
+        return this.possibleTurns
+    }
+}
+
+
 class Pawn extends Piece {
     constructor(color, pieceType = "Pawn", moves) {
         super(color, pieceType, moves)
@@ -86,196 +225,6 @@ class Pawn extends Piece {
     }
 }
 
-class Rook extends Piece {
-    constructor(color, pieceType = "Rook") {
-        super(color, pieceType);
-    }
-    getPossibleTurns(cell, board, checkSafety = true) {
-        this.possibleTurns = [];
-        const directions = [
-            [1,0],
-            [-1,0],
-            [0,1],
-            [0,-1],
-        ]
-        for (let [dx,dy] of directions) {
-            let x = cell.col + dx
-            let y = cell.row + dy
-            while (x >= 0 && x < 8 && y >= 0 && y < 8) {
-                let newCell = board.getCellByCoords(x, y);
-                if (newCell.piece) {
-                    if (newCell.piece.color == this.color) {
-                        break
-                    }
-                    if (! checkSafety || board.isSafeMove(cell, newCell)){
-                        this.possibleTurns.push(coordsToChess(x, y))
-                    }
-                    break
-                }
-                if (! checkSafety || board.isSafeMove(cell, newCell)) {
-                    this.possibleTurns.push(coordsToChess(x, y))
-                }
-                x += dx
-                y += dy
-            }
-        }
-        return this.possibleTurns
-    }
-}
-
-class Knight extends Piece {
-    constructor(color, pieceType = "Knight") {
-        super(color, pieceType);
-    }
-    getPossibleTurns(cell, board, checkSafety = true) {
-        this.possibleTurns = [];
-        const moves = [
-            [2,1],
-            [2,-1],
-            [1,-2],
-            [1,2],
-            [-1,-2],
-            [-1,2],
-            [-2,-1],
-            [-2,1],
-        ]
-        for (let [dx,dy] of moves) {
-            let x = cell.col + dx
-            let y = cell.row + dy
-            if (x >= 0 && x < 8 && y >= 0 && y < 8) {
-                let newCell = board.getCellByCoords(x, y);
-                if (! newCell.piece) {
-                    if (! checkSafety || board.isSafeMove(cell, newCell)){
-                        this.possibleTurns.push(coordsToChess(x, y))
-                    }
-                    continue;
-                }
-                if (newCell.piece.color !== this.color) {
-                    if (! checkSafety || board.isSafeMove(cell, newCell)){
-                        this.possibleTurns.push(coordsToChess(x, y))
-                    }
-                }
-            }
-        }
-        return this.possibleTurns
-    }
-}
-
-class Bishop extends Piece {
-    constructor(color, pieceType = "Bishop") {
-        super(color, pieceType);
-    }
-    getPossibleTurns(cell, board, checkSafety = true) {
-        this.possibleTurns = [];
-        const directions = [
-            [1,1],
-            [1,-1],
-            [-1,1],
-            [-1,-1],
-        ]
-        for (let [dx,dy] of directions) {
-            let x = cell.col + dx
-            let y = cell.row + dy
-            while (x >= 0 && x < 8 && y >= 0 && y < 8) {
-                let newCell = board.getCellByCoords(x, y);
-                if (newCell.piece) {
-                    if (newCell.piece.color == this.color) {
-                        break
-                    }
-                    if (! checkSafety || board.isSafeMove(cell, newCell)){
-                        this.possibleTurns.push(coordsToChess(x, y))
-                    }
-                    break
-                }
-                if (! checkSafety || board.isSafeMove(cell, newCell)){
-                        this.possibleTurns.push(coordsToChess(x, y))
-                    }
-                x += dx
-                y += dy
-            }
-        }
-        return this.possibleTurns;
-    }
-}
-
-class King extends Piece {
-    constructor(color, pieceType = "King") {
-        super(color, pieceType);
-    }
-    getPossibleTurns(cell, board, checkSafety = true) {
-        this.possibleTurns = [];
-        const moves = [
-            [0,1],
-            [0,-1],
-            [1,1],
-            [1,0],
-            [1,-1],
-            [-1,1],
-            [-1,0],
-            [-1,-1]
-        ]
-        for (let [dx,dy] of moves) {
-            let x = cell.col + dx
-            let y = cell.row + dy
-            if (x >= 0 && x < 8 && y >= 0 && y < 8) {
-                let newCell = board.getCellByCoords(x, y);
-                if (! newCell.piece) {
-                    if (! checkSafety || board.isSafeMove(cell, newCell)){
-                        this.possibleTurns.push(coordsToChess(x, y))
-                    }
-                    continue;
-                }
-                if (newCell.piece.color !== this.color) {
-                    if (! checkSafety || board.isSafeMove(cell, newCell)){
-                        this.possibleTurns.push(coordsToChess(x, y))
-                    }
-                }
-            }
-        }
-       return this.possibleTurns
-    }
-}
-
-class Queen extends Piece {
-    constructor(color, pieceType = "Queen") {
-        super(color, pieceType);
-    }
-    getPossibleTurns(cell, board, checkSafety = true) {
-        this.possibleTurns = [];
-        const directions = [
-            [1,0],
-            [-1,0],
-            [0,1],
-            [0,-1],
-            [1,1],
-            [1,-1],
-            [-1,1],
-            [-1,-1],
-        ]
-        for (let [dx,dy] of directions) {
-            let x = cell.col + dx
-            let y = cell.row + dy
-            while (x >= 0 && x < 8 && y >= 0 && y < 8) {
-                let newCell = board.getCellByCoords(x, y);
-                if (newCell.piece) {
-                    if (newCell.piece.color == this.color) {
-                        break
-                    }
-                    if (! checkSafety || board.isSafeMove(cell, newCell)){
-                        this.possibleTurns.push(coordsToChess(x, y))
-                    }
-                    break
-                }
-                if (! checkSafety || board.isSafeMove(cell, newCell)){
-                    this.possibleTurns.push(coordsToChess(x, y))
-                }
-                x += dx
-                y += dy
-            }
-        }
-        return this.possibleTurns
-    }
-}
 
 class Cell {
     constructor(row, column, piece) {
