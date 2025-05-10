@@ -172,8 +172,35 @@ class King extends StepPiece {
     }
     getPossibleTurns(cell, board, checkSafety = true) {
         this.possibleTurns =  super.getPossibleTurns(cell, board, checkSafety);
-        if (! this.movesCount){
-
+        if (! this.movesCount && checkSafety && ! board.isCheck()){
+             let x = cell.col + 1
+             while (x < 8) {
+                 let newCell = board.getCellByCoords(x, cell.row)
+                 if (! board.isSafeMove(cell, newCell)) {
+                    break
+                 }
+                 if (newCell.piece) {
+                     if (newCell.piece.pieceType === "Rook" && newCell.piece.color === this.color && newCell.piece.movesCount === 0) {
+                         this.possibleTurns.push(coordsToChess(x, cell.row))
+                     }
+                     break
+                 }
+                 x += 1
+            }
+            x = cell.col - 1
+            while (x >= 0) {
+                 let newCell = board.getCellByCoords(x, cell.row)
+                 if (! board.isSafeMove(cell, newCell)) {
+                    break
+                 }
+                 if (newCell.piece) {
+                     if (newCell.piece.pieceType === "Rook" && newCell.piece.color === this.color && newCell.piece.movesCount === 0) {
+                         this.possibleTurns.push(coordsToChess(x, cell.row))
+                     }
+                     break
+                 }
+                 x -= 1
+            }
         }
         return this.possibleTurns
     }
@@ -237,7 +264,7 @@ class Cell {
 }
 
 class Board {
-    constructor(statement = startposition) {
+    constructor(statement = testPosition) {
         this.cells = []
         this.blackPieceCells = []
         this.whitePieceCells = []
@@ -513,4 +540,26 @@ startposition = [
   ]
 ]
 
-
+const testPosition = [
+  // rank 8 (чёрные вверху)
+  [ null, null, null,
+    [topColor,    "Rook"],   // d8 — атакующая ладья
+    [topColor,    "King"],   // e8
+    [topColor,    "Rook"],   // f8 — атакующая ладья
+    null,     null
+  ],
+  // ranks 7–2 — всё пусто, чтобы не мешало
+  [ null, null, null, null, null, null, null, null ],  // 7
+  [ null, null, null, null, null, null, null, null ],  // 6
+  [ null, null, null, null, null, null, null, null ],  // 5
+  [ null, null, null, null, null, null, null, null ],  // 4
+  [ null, null, null, null, null, null, null, null ],  // 3
+  [ null, null, null, null, null, null, null, null ],  // 2
+  // rank 1 (белые внизу)
+  [ [bottomColor, "Rook"],   // a1
+    null,     null,  null,
+    [bottomColor, "King"],   // e1
+    null,     null,
+    [bottomColor, "Rook"]    // h1
+  ]
+];
