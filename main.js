@@ -2,7 +2,8 @@ import { Board, chessToCoords, coordsToChess } from "./src/chess.js"
 
 window.onload = function() {
     let board = new Board(startPosition);
-    let boardDiv = renderBoard(board);
+    let boardDiv = document.createElement('div');
+    renderBoard(board, boardDiv)
     let oldCell = null
     boardDiv.addEventListener('click', (ev) => {
         const cell = ev.target.closest('.cell')
@@ -13,7 +14,7 @@ window.onload = function() {
                     oldCell = cell
                 }
             } else {
-                if (putPiece(oldCell, cell, board)) {
+                if (putPiece(oldCell, cell, board, boardDiv)) {
                     oldCell = null
                 }
             }
@@ -21,8 +22,8 @@ window.onload = function() {
     })
 }
 
-function renderBoard(board) {
-    let boardDiv = document.createElement('div');
+function renderBoard(board, boardDiv) {
+    boardDiv.innerHTML = ""
     boardDiv.className = "board";
     for (let row of board.cells) {
         for (let cell of row){
@@ -32,13 +33,11 @@ function renderBoard(board) {
             cellDiv.classList.add('cell');
             cellDiv.classList.add(cell.color);
             if (cell.piece) {
-                console.log(cell.piece)
                 renderPiece(cellDiv);
             }
             boardDiv.appendChild(cellDiv);
             }
         }
-    console.log(boardDiv)
     document.body.appendChild(boardDiv)
     return boardDiv
 }
@@ -78,11 +77,9 @@ function takePiece(cell, board) {
     renderPossibleTurns(board, board.possibleTurns);
 }
 
-function putPiece(oldCell, newCell, board) {
-    debugger;
+function putPiece(oldCell, newCell, board, boardDiv) {
     if (board.makeMove(oldCell.jsCell, newCell.jsCell)) {
-        clearPossibleTurns(board, board.possibleTurns)
-        renderPiece(newCell)
+        renderBoard(board, boardDiv)
         return true
     }
     return false
@@ -94,16 +91,6 @@ function renderPossibleTurns(board, possibleTurns) {
         let cell = board.getCellByCoords(coords[1], coords[0])
         cell.element.insertAdjacentHTML('beforeend', '<p>•</p>');
         }
-}
-
-function clearPossibleTurns(board, possibleTurns) {
-    for (let position of possibleTurns) {
-        let coords = chessToCoords(position)
-        let cell = board.getCellByCoords(coords[1], coords[0])
-        if (cell.element.lastElementChild) {
-            cell.element.lastElementChild.remove()
-        }
-    }
 }
 
 const startPosition = [

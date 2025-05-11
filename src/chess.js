@@ -262,28 +262,18 @@ class Board {
 
     makeMove(oldCell, newCell){
         if (oldCell.position === newCell.position) {
-                return true
+            return true
         }
         if (oldCell.piece.getPossibleTurns(oldCell, this).includes(newCell.position)){
+            const piece = oldCell.piece
             oldCell.piece.movesCount += 1
             this.changeTurnColor()
             this.movePiece(oldCell, newCell)
-            return true
-        }
-        return false
-    }
-    movePiece(oldCell, newCell, isVirtual = false) {
-        this.removeCellFromArray(oldCell);
-        let piece = oldCell.piece;
-        oldCell.piece = null;
-
-        if (piece.pieceType === "Pawn" && (newCell.row == 0 || newCell.row === 7)) {
-            piece = this.createPiece([piece.color, "Queen"])
-        }
-        if (! isVirtual) {
+            if (piece.pieceType === "Pawn" && (newCell.row === 0 || newCell.row === 7)) {
+                newCell.piece = this.createPiece([piece.color, "Queen"])
+            }
             if (this.enPassant) {
                 if (piece.pieceType === "Pawn" && newCell.position === this.enPassant) {
-                    this.enPassantCell.element.innerHTML = ""
                     this.removeCellFromArray(this.enPassantCell)
                     this.enPassantCell.piece = null
                 }
@@ -294,7 +284,14 @@ class Board {
                 this.enPassant = coordsToChess(this.oldCell.col, this.oldCell.row + piece.direction)
                 this.enPassantCell = newCell
             }
+            return true
         }
+        return false
+    }
+    movePiece(oldCell, newCell, isVirtual = false) {
+        this.removeCellFromArray(oldCell);
+        let piece = oldCell.piece;
+        oldCell.piece = null;
         if (newCell.piece) {
             this.removeCellFromArray(newCell);
         }
