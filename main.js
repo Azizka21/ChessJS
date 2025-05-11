@@ -139,27 +139,3 @@ const startPosition = [
     ["white", "Rook"]
   ]
 ]
-
-const testPosition = [
-  // rank 8 (чёрные вверху)
-  [ null, null, null,
-    ["black",    "Rook"],   // d8 — атакующая ладья
-    ["black",    "King"],   // e8
-    ["black",    "Rook"],   // f8 — атакующая ладья
-    null,     null
-  ],
-  // ranks 7–2 — всё пусто, чтобы не мешало
-  [ null, null, null, null, null, null, null, null ],  // 7
-  [ null, null, null, null, null, null, null, null ],  // 6
-  [ null, null, null, null, null, null, null, null ],  // 5
-  [ null, null, null, null, null, null, null, null ],  // 4
-  [ null, null, null, null, null, null, null, null ],  // 3
-  [ null, null, null, null, null, null, null, null ],  // 2
-  // rank 1 (белые внизу)
-  [ ["white", "Rook"],   // a1
-    null,     null,  null,
-    ["white", "King"],   // e1
-    null,     null,
-    ["white", "Rook"]    // h1
-  ]
-];

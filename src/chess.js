@@ -268,6 +268,14 @@ class Board {
             const piece = oldCell.piece
             oldCell.piece.movesCount += 1
             this.changeTurnColor()
+            if (piece.pieceType === "King" && newCell.piece && newCell.piece.color === piece.color) {
+                const direction = oldCell.col > newCell.col ? -1 : 1
+                let newKingCell = this.getCellByCoords(oldCell.col + direction * 2, oldCell.row)
+                let newRookCell = this.getCellByCoords(oldCell.col + direction, oldCell.row)
+                this.movePiece(oldCell, newKingCell)
+                this.movePiece(newCell, newRookCell)
+                return true
+            }
             this.movePiece(oldCell, newCell)
             if (piece.pieceType === "Pawn" && (newCell.row === 0 || newCell.row === 7)) {
                 newCell.piece = this.createPiece([piece.color, "Queen"])
