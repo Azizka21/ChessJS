@@ -1,34 +1,3 @@
-window.onload = function() {
-    board = new Board();
-    boardDiv = board.renderBoard();
-    boardDiv.addEventListener('click', (ev) => {
-        const cell = ev.target.closest('.cell')
-        if (cell) {
-            if (board.isTaking) {
-                if (cell.jsCell.piece && cell.jsCell.piece.color === board.turnColor) {
-                    board.takePiece(cell)
-                }
-            } else {
-                board.putPiece(cell)
-            }
-        }
-    })
-}
-
-
-document.addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        console.log("Нажат Enter!");
-    }
-})
-
-document.addEventListener("mousemove", function(event) {
-    if (Board.picked) {
-        console.log("moved")
-    }
-})
-
-
 class Piece {
     constructor(color, pieceType) {
         this.color = color;
@@ -210,7 +179,7 @@ class King extends StepPiece {
 class Pawn extends Piece {
     constructor(color, pieceType = "Pawn") {
         super(color, pieceType)
-        this.direction = this.color == topColor ? 1 : -1
+        this.direction = this.color === "white" ? -1 : 1
     }
     getPossibleTurns(cell, board, checkSafety = true) {
         this.possibleTurns = [];
@@ -264,7 +233,7 @@ class Cell {
 }
 
 class Board {
-    constructor(statement = testPosition) {
+    constructor(statement) {
         this.cells = []
         this.blackPieceCells = []
         this.whitePieceCells = []
@@ -280,6 +249,9 @@ class Board {
             }
             this.cells.push(row)
         }
+        const isBlackTop = Math.random() < 0.5;
+        this.topColor = isBlackTop ? "black" : "white";
+        this.bottomColor = isBlackTop ? "white" : "black";
         this.turnColor = "white"
         this.enPassant = null
         this.enPassantCell = null
@@ -288,6 +260,18 @@ class Board {
         console.dir(this)
     }
 
+    makeMove(oldCell, newCell){
+        if (oldCell.position === newCell.position) {
+                return true
+        }
+        if (oldCell.piece.getPossibleTurns(oldCell, this).includes(newCell.position)){
+            oldCell.piece.movesCount += 1
+            this.changeTurnColor()
+            this.movePiece(oldCell, newCell)
+            return true
+        }
+        return false
+    }
     movePiece(oldCell, newCell, isVirtual = false) {
         this.removeCellFromArray(oldCell);
         let piece = oldCell.piece;
@@ -318,28 +302,6 @@ class Board {
         this.addCellToArray(newCell)
     }
 
-    takePiece(cell) {
-        this.oldCell = cell.jsCell;
-        this.possibleTurns = cell.jsCell.piece.getPossibleTurns(cell.jsCell, this);
-        this.possibleTurns.push(cell.jsCell.position);
-        cell.innerHTML = "";
-        this.renderPossibleTurns();
-        this.isTaking = false
-    }
-
-    putPiece(cell) {
-        if (this.possibleTurns.includes(coordsToChess(cell.jsCell.col, cell.jsCell.row))) {
-            this.movePiece(this.oldCell, cell.jsCell);
-            this.clearPossibleTurns();
-            this.renderPiece(cell);
-            if (! (this.oldCell.position === cell.jsCell.position)) {
-                cell.jsCell.piece.movesCount += 1
-                this.changeTurnColor()
-            }
-            this.isTaking = true;
-        }
-    }
-
     getCellByCoords(x, y) {
         return this.cells[y][x]
     }
@@ -365,27 +327,6 @@ class Board {
         }
     }
 
-    renderBoard() {
-        let boardDiv = document.createElement('div');
-        boardDiv.className = "board";
-        for (let row of this.cells) {
-            for (let cell of row){
-            let cellDiv = document.createElement('div');
-            cell.element = cellDiv;
-            cellDiv.jsCell = cell;
-            cellDiv.classList.add('cell');
-            cellDiv.classList.add(cell.color);
-            if (cell.piece) {
-                this.renderPiece(cellDiv);
-            }
-            boardDiv.appendChild(cellDiv);
-            }
-        }
-        console.log(boardDiv)
-        document.body.appendChild(boardDiv)
-        return boardDiv
-    }
-
     createPiece(pieceConfig) {
         if (pieceConfig) {
             const PieceClass = pieceClasses[pieceConfig[1]];
@@ -396,53 +337,6 @@ class Board {
         }
     }
 
-    renderPiece(cell) {
-        const img = document.createElement("img");
-        if (cell.jsCell.piece.color == "white") {
-            const piecesPNG = {
-                Pawn: "https://upload.wikimedia.org/wikipedia/commons/0/04/Chess_plt60.png",
-                Rook: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Chess_rlt60.png",
-                Knight: "https://upload.wikimedia.org/wikipedia/commons/2/28/Chess_nlt60.png",
-                Bishop: "https://upload.wikimedia.org/wikipedia/commons/9/9b/Chess_blt60.png",
-                King: "https://upload.wikimedia.org/wikipedia/commons/3/3b/Chess_klt60.png",
-                Queen: "https://upload.wikimedia.org/wikipedia/commons/4/49/Chess_qlt60.png",
-            };
-            img.src = piecesPNG[cell.jsCell.piece.pieceType]
-        } else {
-            const piecesPNG = {
-                Pawn: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Chess_pdt60.png",
-                Rook: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Chess_rdt60.png",
-                Knight: "https://upload.wikimedia.org/wikipedia/commons/f/f1/Chess_ndt60.png",
-                Bishop: "https://upload.wikimedia.org/wikipedia/commons/8/81/Chess_bdt60.png",
-                King: "https://upload.wikimedia.org/wikipedia/commons/e/e3/Chess_kdt60.png",
-                Queen: "https://upload.wikimedia.org/wikipedia/commons/a/af/Chess_qdt60.png",
-            };
-            img.src = piecesPNG[cell.jsCell.piece.pieceType]
-        }
-        cell.replaceChildren(img);
-    }
-    renderPossibleTurns() {
-        /* Костыльная проверка вставляем мы или удаляем
-        if (picked) {
-
-        }
-
-        */
-        for (let position of this.possibleTurns) {
-            let coords = chessToCoords(position)
-            let cell = this.getCellByCoords(coords[1], coords[0])
-            cell.element.insertAdjacentHTML('beforeend', '<p>•</p>');
-        }
-    }
-    clearPossibleTurns() {
-        for (let position of this.possibleTurns) {
-            let coords = chessToCoords(position)
-            let cell = this.getCellByCoords(coords[1], coords[0])
-            if (cell.element.lastElementChild) {
-                cell.element.lastElementChild.remove()
-            }
-        }
-    }
     isSafeMove(oldCell, newCell) {
         let movingPiece = oldCell.piece
         let capturedPiece = newCell.piece
@@ -480,10 +374,6 @@ function chessToCoords(chessNotation) {
     return [parseInt(chessNotation[1]) - 1, letterToNum.indexOf(chessNotation[0])]
 }
 
-const isBlackTop = Math.random() < 0.5;
-const topColor = isBlackTop ? "black" : "white";
-const bottomColor = isBlackTop ? "white" : "black";
-
 const pieceClasses = {
     Rook: Rook,
     Knight: Knight,
@@ -493,73 +383,4 @@ const pieceClasses = {
     Pawn: Pawn
 }
 
-startposition = [
-  [
-    [topColor, "Rook"],
-    [topColor, "Knight"],
-    [topColor, "Bishop"],
-    [topColor, "Queen"],
-    [topColor, "King"],
-    [topColor, "Bishop"],
-    [topColor, "Knight"],
-    [topColor, "Rook"]
-  ],
-  [
-    [topColor, "Pawn"],
-    [topColor, "Pawn"],
-    [topColor, "Pawn"],
-    [topColor, "Pawn"],
-    [topColor, "Pawn"],
-    [topColor, "Pawn"],
-    [topColor, "Pawn"],
-    [topColor, "Pawn"]
-  ],
-  [ null, null, null, null, null, null, null, null ],
-  [ null, null, null, null, null, null, null, null ],
-  [ null, null, null, null, null, null, null, null ],
-  [ null, null, null, null, null, null, null, null ],
-  [
-    [bottomColor, "Pawn"],
-    [bottomColor, "Pawn"],
-    [bottomColor, "Pawn"],
-    [bottomColor, "Pawn"],
-    [bottomColor, "Pawn"],
-    [bottomColor, "Pawn"],
-    [bottomColor, "Pawn"],
-    [bottomColor, "Pawn"]
-  ],
-  [
-    [bottomColor, "Rook"],
-    [bottomColor, "Knight"],
-    [bottomColor, "Bishop"],
-    [bottomColor, "Queen"],
-    [bottomColor, "King"],
-    [bottomColor, "Bishop"],
-    [bottomColor, "Knight"],
-    [bottomColor, "Rook"]
-  ]
-]
-
-const testPosition = [
-  // rank 8 (чёрные вверху)
-  [ null, null, null,
-    [topColor,    "Rook"],   // d8 — атакующая ладья
-    [topColor,    "King"],   // e8
-    [topColor,    "Rook"],   // f8 — атакующая ладья
-    null,     null
-  ],
-  // ranks 7–2 — всё пусто, чтобы не мешало
-  [ null, null, null, null, null, null, null, null ],  // 7
-  [ null, null, null, null, null, null, null, null ],  // 6
-  [ null, null, null, null, null, null, null, null ],  // 5
-  [ null, null, null, null, null, null, null, null ],  // 4
-  [ null, null, null, null, null, null, null, null ],  // 3
-  [ null, null, null, null, null, null, null, null ],  // 2
-  // rank 1 (белые внизу)
-  [ [bottomColor, "Rook"],   // a1
-    null,     null,  null,
-    [bottomColor, "King"],   // e1
-    null,     null,
-    [bottomColor, "Rook"]    // h1
-  ]
-];
+export {Piece, Bishop, Queen, King, Pawn, Rook, Knight, Cell, Board, coordsToChess, chessToCoords}
