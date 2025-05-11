@@ -189,7 +189,7 @@ class Pawn extends Piece {
             }
         }
         if (! this.movesCount){
-            if (! board.cells[cell.row + this.direction * 2][cell.col].piece) {
+            if (! board.cells[cell.row + this.direction][cell.col].piece && ! board.cells[cell.row + this.direction * 2][cell.col].piece) {
                 if (! checkSafety || board.isSafeMove(cell, board.getCellByCoords(cell.col, cell.row + this.direction * 2))) {
                     this.possibleTurns.push(coordsToChess(cell.col, cell.row + this.direction * 2))
             }
